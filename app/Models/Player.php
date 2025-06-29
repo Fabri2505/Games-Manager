@@ -9,4 +9,11 @@ class Player extends Model
 {
     /** @use HasFactory<\Database\Factories\PlayerFactory> */
     use HasFactory;
+
+    protected $fillable = ['nom', 'ape', 'user_id'];
+
+    public function user(){
+        return $this->belongsTo(User::class);
+    }
+
 }

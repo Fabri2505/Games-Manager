@@ -5,12 +5,35 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Link } from '@inertiajs/react';
 import { ArrowLeft, Music, Trophy, Crown, Users, CirclePlus, Flame, BarChart3 } from 'lucide-react';
-//import { useState } from 'react';
+import { useState } from 'react';
 
-export default function HomeGolpeao() {
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
 
-  // const [players, setPlayers] = useState<string[]>([])
+interface Player {
+  id: number;
+  nombre: string;
+  apellido: string;
+  nombre_completo: string;
+  email: string | null;
+  user: User | null;
+}
 
+interface JugadorEnMesa extends Player {
+  color: string;
+  fondo: string;
+  inicial: string;
+  seleccionado: boolean;
+}
+
+interface HomeGolpeaoProps {
+  players?: Player[];
+}
+
+export default function HomeGolpeao({players = []}: HomeGolpeaoProps) {
 
   return (
     <div className="mx-auto flex min-h-screen flex-col px-4 py-4">
