@@ -10,6 +10,8 @@ class Participante extends Model
     use HasFactory;
     
     protected $fillable = [
+        'user_id',    // ← Faltaba
+        'ronda_id',   // ← Faltaba
         'winner'
     ];
 
