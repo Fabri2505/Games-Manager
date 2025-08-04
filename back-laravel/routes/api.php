@@ -11,4 +11,4 @@ Route::put('game/cierre', [GameController::class,'update'])->name('game.cierre')
 Route::post('ronda', [RondaController::class,'store'])->name('ronda.store');
 Route::put('ronda/{ronda}/set-winner', [RondaController::class,'setWinner'])->name('ronda.setWinner');
 Route::post('ronda/{ronda}/add-players', [RondaController::class,'addPlayers'])->name('ronda.addPlayers');
-Route::delete('ronda/{ronda}/remove-players', [RondaController::class,'removePlayer'])->name('ronda.removePlayer');
+Route::delete('ronda/{ronda}/remove-player', [RondaController::class,'removePlayer'])->name('ronda.removePlayer');

@@ -1,0 +1,978 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "API de Gestión de Juegos",
+        "description": "API para la gestión de juegos, rondas y participantes. Permite crear juegos, gestionar rondas y administrar participantes con sus respectivos resultados.",
+        "contact": {
+            "name": "Soporte API",
+            "email": "fabriciocervantesmendoza@gmail.com"
+        },
+        "license": {
+            "name": "AGPL-3.0",
+            "url": "https://opensource.org/licenses/AGPL-3.0"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://127.0.0.1:8000",
+            "description": "Servidor API"
+        }
+    ],
+    "paths": {
+        "/api/game": {
+            "post": {
+                "tags": [
+                    "Games"
+                ],
+                "summary": "Crear un nuevo juego",
+                "description": "Crea un nuevo juego con descripción y monto. La fecha de juego se establece automáticamente.",
+                "operationId": "7a2506f2777e2d3f3d3e2290e4635687",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "descrip",
+                                    "monto"
+                                ],
+                                "properties": {
+                                    "descrip": {
+                                        "description": "Descripción del juego",
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "Torneo de Ajedrez Mensual"
+                                    },
+                                    "monto": {
+                                        "description": "Monto del juego",
+                                        "type": "number",
+                                        "format": "float",
+                                        "minimum": 0,
+                                        "example": 50
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Juego creado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "game": {
+                                            "$ref": "#/components/schemas/Game"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "descrip": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "The descrip field is required."
+                                                    }
+                                                },
+                                                "monto": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "The monto must be at least 0."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/game/cierre": {
+            "put": {
+                "tags": [
+                    "Games"
+                ],
+                "summary": "Actualizar fecha de cierre del juego",
+                "description": "Establece la fecha de cierre de un juego. La fecha debe ser posterior al momento actual.",
+                "operationId": "d99de8bb00c7172defa29b65089458fe",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "fec_cierre"
+                                ],
+                                "properties": {
+                                    "fec_cierre": {
+                                        "description": "Fecha y hora de cierre del juego (debe ser futura)",
+                                        "type": "string",
+                                        "format": "datetime",
+                                        "example": "2024-08-10 18:00:00"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Juego actualizado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Juego actualizado exitosamente"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Game"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Juego no encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No query results for model [App\\\\Models\\\\Game]."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error de validación",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "fec_cierre": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "The fec cierre must be a date after now."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/players": {
+            "get": {
+                "tags": [
+                    "Players"
+                ],
+                "summary": "Listar todos los jugadores",
+                "description": "Obtiene una lista completa de todos los jugadores registrados en el sistema",
+                "operationId": "4d82d8154a4a5d24eaba830b2e941b10",
+                "responses": {
+                    "200": {
+                        "description": "Lista de jugadores obtenida exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "players": {
+                                            "description": "Array de jugadores",
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/User"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Internal server error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/rondas": {
+            "post": {
+                "tags": [
+                    "Rondas"
+                ],
+                "summary": "Crear una nueva ronda",
+                "operationId": "ef201efdaade6bb1387bd983139300ff",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "game_id",
+                                    "participantes"
+                                ],
+                                "properties": {
+                                    "game_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "participantes": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            1,
+                                            2,
+                                            3,
+                                            4
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Ronda creada exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ronda iniciada exitosamente"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Ronda"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error de validación"
+                    }
+                }
+            }
+        },
+        "/api/rondas/{ronda}/add-players": {
+            "post": {
+                "tags": [
+                    "Rondas"
+                ],
+                "summary": "Agregar participantes a una ronda",
+                "operationId": "165361aadfea254392c71b8120f3f97b",
+                "parameters": [
+                    {
+                        "name": "ronda",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "user_ids"
+                                ],
+                                "properties": {
+                                    "user_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            5,
+                                            7,
+                                            9
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Participantes agregados exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "3 participante(s) agregado(s) exitosamente"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "participantes_agregados": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/Participante"
+                                                    }
+                                                },
+                                                "usuarios_duplicados": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "integer"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error de validación o ronda finalizada"
+                    }
+                }
+            }
+        },
+        "/api/rondas/{ronda}/remove-player": {
+            "delete": {
+                "tags": [
+                    "Rondas"
+                ],
+                "summary": "Remover un participante de la ronda",
+                "operationId": "2553cd4fa6f40c62c2ac66fd760c92b7",
+                "parameters": [
+                    {
+                        "name": "ronda",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "user_id"
+                                ],
+                                "properties": {
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 7
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Participante removido exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Participante Juan Pérez removido exitosamente"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Participante no encontrado"
+                    },
+                    "400": {
+                        "description": "No se puede remover al ganador o ronda finalizada"
+                    }
+                }
+            }
+        },
+        "/api/rondas/{ronda}/set-winner": {
+            "patch": {
+                "tags": [
+                    "Rondas"
+                ],
+                "summary": "Establecer o quitar ganador de la ronda",
+                "operationId": "ce919fde6e96b7202b00dc2aa23b14e9",
+                "parameters": [
+                    {
+                        "name": "ronda",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "user_id",
+                                    "win"
+                                ],
+                                "properties": {
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "win": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Ganador establecido exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ganador establecido exitosamente"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "participante": {
+                                                    "$ref": "#/components/schemas/Participante"
+                                                },
+                                                "ronda_finalizada": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Participante no encontrado"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "User": {
+                "title": "Usuario",
+                "description": "Modelo de usuario/jugador",
+                "required": [
+                    "id",
+                    "name",
+                    "email"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID único del usuario",
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "name": {
+                        "description": "Nombre completo del usuario",
+                        "type": "string",
+                        "maxLength": 255,
+                        "example": "Juan Pérez"
+                    },
+                    "email": {
+                        "description": "Correo electrónico del usuario",
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 255,
+                        "example": "juan.perez@example.com"
+                    },
+                    "email_verified_at": {
+                        "description": "Fecha de verificación del email",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-15T10:30:00Z",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "description": "Fecha de creación del usuario",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-10T08:15:30Z"
+                    },
+                    "updated_at": {
+                        "description": "Fecha de última actualización",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-20T14:22:45Z"
+                    }
+                },
+                "type": "object"
+            },
+            "Game": {
+                "title": "Juego",
+                "description": "Modelo de juego",
+                "required": [
+                    "id",
+                    "descrip",
+                    "monto",
+                    "fec_juego"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID único del juego",
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "descrip": {
+                        "description": "Descripción del juego",
+                        "type": "string",
+                        "maxLength": 255,
+                        "example": "Torneo de Ajedrez Mensual"
+                    },
+                    "monto": {
+                        "description": "Monto del juego",
+                        "type": "number",
+                        "format": "float",
+                        "minimum": 0,
+                        "example": 50
+                    },
+                    "fec_juego": {
+                        "description": "Fecha del juego",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-08-05T10:00:00Z"
+                    },
+                    "fec_cierre": {
+                        "description": "Fecha de cierre del juego",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-08-10T18:00:00Z",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "description": "Fecha de creación",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-08-01T09:30:00Z"
+                    },
+                    "updated_at": {
+                        "description": "Fecha de última actualización",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-08-02T11:15:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "Ronda": {
+                "title": "Ronda",
+                "description": "Modelo de ronda de juego",
+                "required": [
+                    "id",
+                    "fec",
+                    "hora_ini",
+                    "game_id"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID único de la ronda",
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "fec": {
+                        "description": "Fecha de la ronda",
+                        "type": "string",
+                        "format": "date",
+                        "example": "2024-08-05"
+                    },
+                    "hora_ini": {
+                        "description": "Hora de inicio de la ronda",
+                        "type": "string",
+                        "format": "time",
+                        "example": "14:30:00"
+                    },
+                    "hora_fin": {
+                        "description": "Hora de finalización de la ronda",
+                        "type": "string",
+                        "format": "time",
+                        "example": "16:45:00",
+                        "nullable": true
+                    },
+                    "game_id": {
+                        "description": "ID del juego al que pertenece la ronda",
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "game": {
+                        "$ref": "#/components/schemas/Game"
+                    },
+                    "participantes": {
+                        "description": "Lista de participantes en la ronda",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Participante"
+                        }
+                    },
+                    "created_at": {
+                        "description": "Fecha de creación",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-08-05T14:30:00Z"
+                    },
+                    "updated_at": {
+                        "description": "Fecha de última actualización",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-08-05T16:45:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "Participante": {
+                "title": "Participante",
+                "description": "Modelo de participante en una ronda",
+                "required": [
+                    "id",
+                    "user_id",
+                    "ronda_id",
+                    "winner"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID único del participante",
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "description": "ID del usuario participante",
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 3
+                    },
+                    "ronda_id": {
+                        "description": "ID de la ronda",
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "winner": {
+                        "description": "Indica si el participante es el ganador",
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/User"
+                    },
+                    "ronda": {
+                        "$ref": "#/components/schemas/Ronda"
+                    },
+                    "created_at": {
+                        "description": "Fecha de creación",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-08-05T14:30:00Z"
+                    },
+                    "updated_at": {
+                        "description": "Fecha de última actualización",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-08-05T16:45:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "ApiResponse": {
+                "title": "Respuesta API",
+                "description": "Estructura estándar de respuesta de la API",
+                "properties": {
+                    "success": {
+                        "description": "Indica si la operación fue exitosa",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "description": "Mensaje descriptivo de la operación",
+                        "type": "string",
+                        "example": "Operación realizada exitosamente"
+                    },
+                    "data": {
+                        "description": "Datos de respuesta (estructura variable según endpoint)",
+                        "type": "object"
+                    },
+                    "error": {
+                        "description": "Mensaje de error (solo presente en caso de error)",
+                        "type": "string",
+                        "example": "Descripción del error ocurrido",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "ValidationError": {
+                "title": "Error de Validación",
+                "description": "Respuesta de error de validación",
+                "properties": {
+                    "message": {
+                        "description": "Mensaje general del error",
+                        "type": "string",
+                        "example": "The given data was invalid."
+                    },
+                    "errors": {
+                        "description": "Errores específicos por campo",
+                        "type": "object",
+                        "example": {
+                            "field_name": [
+                                "Este campo es obligatorio."
+                            ],
+                            "another_field": [
+                                "Este campo debe ser un número."
+                            ]
+                        },
+                        "additionalProperties": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "responses": {
+            "400": {
+                "description": "Solicitud incorrecta",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": false
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "Datos de entrada inválidos"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "401": {
+                "description": "No autorizado",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "Unauthenticated."
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "403": {
+                "description": "Acceso prohibido",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "This action is unauthorized."
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "404": {
+                "description": "Recurso no encontrado",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "No query results for model."
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "422": {
+                "description": "Error de validación",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ValidationError"
+                        }
+                    }
+                }
+            },
+            "500": {
+                "description": "Error interno del servidor",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "success": {
+                                    "type": "boolean",
+                                    "example": false
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "Error interno del servidor"
+                                },
+                                "error": {
+                                    "type": "string",
+                                    "example": "Descripción técnica del error"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "description": "Ingrese el token JWT en el formato: Bearer {token}",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Games",
+            "description": "Gestión de juegos"
+        },
+        {
+            "name": "Players",
+            "description": "Gestión de jugadores"
+        },
+        {
+            "name": "Rondas",
+            "description": "Rondas"
+        }
+    ]
+}

@@ -9,6 +9,8 @@ class Game extends Model
 {
     use HasFactory;
 
+    public $timestamps = false;
+
     protected $fillable = [
         'descrip',
         'monto',
