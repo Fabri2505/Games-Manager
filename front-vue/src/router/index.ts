@@ -3,6 +3,7 @@ import { createRouter, createWebHistory, type RouteRecord, type RouteRecordRaw }
 import Register from '@/pages/Register.vue'
 import Login from '@/pages/Login.vue'
 import Welcome from '@/pages/Welcome.vue'
+import HomeGames from '@/pages/HomeGames.vue'
 
 const routes:RouteRecordRaw[] = [
   {
@@ -29,6 +30,15 @@ const routes:RouteRecordRaw[] = [
     component: Register,
     meta: { 
       title: 'Crear Cuenta - Royal Casino',
+      requiresGuest: true 
+    }
+  },
+  {
+    path: '/home-games',
+    name: 'HomeGames', 
+    component: HomeGames,
+    meta: { 
+      title: 'Admin de Juego Totales',
       requiresGuest: true 
     }
   }
