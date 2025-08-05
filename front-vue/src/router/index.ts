@@ -1,9 +1,19 @@
 import { createRouter, createWebHistory, type RouteRecord, type RouteRecordRaw } from 'vue-router'
 
-import Register from '@/pages/Register.vue';
+import Register from '@/pages/Register.vue'
 import Login from '@/pages/Login.vue'
+import Welcome from '@/pages/Welcome.vue'
 
 const routes:RouteRecordRaw[] = [
+  {
+    path: '/',
+    name: 'Welcome',
+    component: Welcome,
+    meta: {
+      title: 'Bienvenido - Royal Casino',
+      requiresGuest: true
+    }
+  },
   {
     path: '/login',
     name: 'Login',

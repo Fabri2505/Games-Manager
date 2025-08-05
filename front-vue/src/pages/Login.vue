@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
   import { ref } from 'vue'
 
   // Variables reactivas
@@ -8,14 +8,12 @@
   })
 
   // Función para manejar el envío
-  const handleSubmit = (event) => {
+  const handleSubmit = (event:Event) => {
     event.preventDefault()
     console.log('Datos del formulario:', form.value)
     
     // Aquí irían las validaciones y envío al backend
     alert(`Registro enviado:
-    Nombre: ${form.value.nombre}
-    Apellido: ${form.value.apellido}
     Email: ${form.value.email}
     Password: ${form.value.password}`)
   }
@@ -38,7 +36,7 @@
           </label>
           <input 
             id="email" 
-            v-model="form.nombre"
+            v-model="form.email"
             type="text" 
             required
             placeholder="Ingresa el email"

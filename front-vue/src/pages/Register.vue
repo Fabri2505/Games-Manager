@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
   import { ref } from 'vue'
 
   // Variables reactivas
@@ -10,7 +10,7 @@
   })
 
   // Función para manejar el envío
-  const handleSubmit = (event) => {
+  const handleSubmit = (event:Event) => {
     event.preventDefault()
     console.log('Datos del formulario:', form.value)
     
