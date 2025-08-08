@@ -3,7 +3,6 @@ import CardJugador from '@/components/CardJugador.vue';
 import Header from '@/components/Header.vue';
 import type { Player } from '@/utils/schema';
 import { ArrowLeft, Music } from 'lucide-vue-next';
-import { reactive } from 'vue';
 
 const jugadores: Player[] = [
   {
@@ -96,7 +95,6 @@ const jugadores: Player[] = [
   .card_template{
     border: 0.5px solid #EBEBEB;
     border-radius: 15px;
-    background-color: aqua;
   }
 
   .player-list {

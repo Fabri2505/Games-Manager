@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, type RouteRecord, type RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 
 import Register from '@/pages/Register.vue'
 import Login from '@/pages/Login.vue'
