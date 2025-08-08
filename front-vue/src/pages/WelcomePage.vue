@@ -1,6 +1,6 @@
 <script setup lang="ts">
-    import Header from '@/components/Header.vue';
-import { ArrowLeft, ChartColumn, History } from 'lucide-vue-next';
+  import Header from '@/components/Header.vue';
+  import { ArrowLeft, ChartColumn, History } from 'lucide-vue-next';
 </script>
 
 <template>

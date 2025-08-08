@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 
-import Register from '@/pages/Register.vue'
-import Login from '@/pages/Login.vue'
-import Welcome from '@/pages/Welcome.vue'
+import Register from '@/pages/RegisterPage.vue'
+import Login from '@/pages/LoginPage.vue'
+import Welcome from '@/pages/WelcomePage.vue'
 import HomeGames from '@/pages/HomeGames.vue'
 import HomeGolpeado from '@/pages/HomeGolpeado.vue'
 
