@@ -7,6 +7,7 @@ use App\Models\Participante;
 use App\Models\Ronda;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RondaController extends Controller
 {
@@ -62,6 +63,8 @@ class RondaController extends Controller
             "participantes.*" => 'required|exists:users,id',
         ]);
 
+        Log::debug("Validado parametros correctamente");
+
         try{
             DB::beginTransaction();
 
@@ -71,6 +74,10 @@ class RondaController extends Controller
                 'hora_fin' => null,
                 'game_id' => $validated['game_id']
             ]);
+
+            Log::info('Ronda creada');
+            Log::info('Ronda creada con ID:', ['id' => $ronda->id]);
+
             
             $participantes = collect($validated['participantes'])->map(function ($userId) use ($ronda) {
                 return [
@@ -81,6 +88,8 @@ class RondaController extends Controller
                     'updated_at' => now()
                 ];
             });
+
+            Log::info('Participantes mapeados:', $participantes->toArray());
 
             Participante::insert($participantes->toArray());
 
@@ -96,10 +105,18 @@ class RondaController extends Controller
         }catch(\Exception $e){
 
             DB::rollback();
+
+            Log::error('Error al crear ronda:', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+
         
             return response()->json([
                 'success' => false,
-                'message' => 'Error al iniciar la ronda'
+                'message' => 'Error al iniciar la ronda',
+                'error' => config('app.debug') ? $e->getMessage() : null
             ], 500);
 
         }

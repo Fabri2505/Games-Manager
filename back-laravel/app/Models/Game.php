@@ -16,6 +16,7 @@ class Game extends Model
         'monto',
         'fec_juego',
         'fec_cierre',
+        'user_id'
     ];
 
     protected $casts = [
@@ -27,5 +28,10 @@ class Game extends Model
     public function rondas()
     {
         return $this->hasMany(Ronda::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

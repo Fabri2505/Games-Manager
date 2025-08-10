@@ -34,7 +34,7 @@ class GameController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"descrip","monto"},
+     *             required={"descrip","monto","user_id"},
      *             @OA\Property(
      *                 property="descrip",
      *                 type="string",
@@ -49,6 +49,13 @@ class GameController extends Controller
      *                 minimum=0,
      *                 description="Monto del juego",
      *                 example=50.00
+     *             ),
+     *             @OA\Property(
+     *                 property="user_id",
+     *                 type="number",
+     *                 minimum=1,
+     *                 description="Id del jugador que crea",
+     *                 example=1
      *             )
      *         )
      *     ),
@@ -89,7 +96,8 @@ class GameController extends Controller
     {
         $validated = $request->validate([
             'descrip' => 'required|string|max:255',
-            'monto' => 'required|numeric|min:0'
+            'monto' => 'required|numeric|min:0',
+            'user_id'=>'required|exists:users,id'
         ]);
 
         $validated['fec_juego'] = now();

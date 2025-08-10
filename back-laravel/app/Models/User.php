@@ -72,4 +72,11 @@ class User extends Authenticatable
         $token = $this->currentAccessToken();
         return $token ? $token->delete() : false;
     }
+    /**
+     * Relacion con games
+     */
+    public function games()
+    {
+        return $this->hasMany(Game::class);
+    }
 }
