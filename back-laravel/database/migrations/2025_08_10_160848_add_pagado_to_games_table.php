@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('games', function (Blueprint $table) {
-            $table->foreignId('user_id')->constrained();
+            $table->boolean('pagado')->default(0);
         });
     }
 
@@ -22,8 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('games', function (Blueprint $table) {
-            $table->dropForeign('game_user_id_foreign');
-            $table->dropColumn('user_id');
+            $table->dropColumn('pagado');
         });
     }
 };
