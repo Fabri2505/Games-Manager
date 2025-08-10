@@ -5,6 +5,7 @@ import Login from '@/pages/LoginPage.vue'
 import Welcome from '@/pages/WelcomePage.vue'
 import HomeGames from '@/pages/HomeGames.vue'
 import HomeGolpeado from '@/pages/HomeGolpeado.vue'
+import GolpeadoPage from '@/pages/GolpeadoPage.vue'
 
 const routes:RouteRecordRaw[] = [
   {
@@ -49,6 +50,15 @@ const routes:RouteRecordRaw[] = [
     component: HomeGolpeado,
     meta: { 
       title: 'Admin de Juego Golpeado',
+      requiresGuest: true 
+    }
+  },
+  {
+    path: '/golpeado',
+    name: 'Golpeado', 
+    component: GolpeadoPage,
+    meta: { 
+      title: 'Golpeado | Mesa de juego',
       requiresGuest: true 
     }
   }

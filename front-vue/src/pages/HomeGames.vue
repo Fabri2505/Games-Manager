@@ -1,7 +1,14 @@
 <script setup lang="ts">
-import Header from '@/components/Header.vue';
+import Header from '@/components/HeaderComponent.vue';
+import CardGame from '@/components/HomeGamesP/CardGame.vue';
 import { ArrowLeft } from 'lucide-vue-next';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
+
+const tomarRuta = (ruta:string)=>{
+  router.push(ruta);
+};
 
 </script>
 
@@ -16,6 +23,27 @@ import { ArrowLeft } from 'lucide-vue-next';
         
       </template>
     </Header>
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <CardGame
+        title="Juegos de Cartas"
+        description="Registra las ganancias y pérdidas en juegos de cartas como Poker, Truco, etc."
+        route="/home-golpeado"
+        :is-popular="true"
+        color="blue"
+        icon="wallet"
+        @navigate="tomarRuta"
+      />
+      <CardGame
+        title="Juegos de Cartas"
+        description="Registra las ganancias y pérdidas en juegos de cartas como Poker, Truco, etc."
+        route="/golpeado"
+        :is-popular="true"
+        color="blue"
+        icon="wallet"
+        @navigate="tomarRuta"
+      />
+    </div>
+    
 
 </template>
 

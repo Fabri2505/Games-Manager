@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import Header from '@/components/Header.vue';
+  import Header from '@/components/HeaderComponent.vue';
   import { ArrowLeft, ChartColumn, History } from 'lucide-vue-next';
 </script>
 
@@ -16,8 +16,6 @@
       </template>
     </Header>
 
-
-    
 </template>
 
 <style scoped>
