@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { Link, Plus } from 'lucide-vue-next';
 
-const newGame = ref<boolean>(false);
+const newGame = ref<boolean>(true);
 
 const emit = defineEmits<{
   gameTypeChanged: [isNewGame: boolean];
@@ -20,29 +20,25 @@ const handleContinueSeries = () => {
 </script>
 
 <template>
-  <div class="flex justify-center w-full">
-    <div class="p-1 w-full bg-[#E3E3E3]">
+  <div class="flex justify-center w-full rounded-md p-1 bg-[#E3E3E3]">
       <button 
         @click="handleNewGame"
         :class="[
-          'flex w-full gap-2 justify-center py-1 transition-colors',
-          newGame ? 'bg-blue-500 text-white' : 'bg-white'
+          'flex w-full rounded-bl-sm rounded-tl-sm gap-2 justify-center py-1 transition-colors',
+          newGame ? 'bg-white' : 'bg-[#E3E3E3]'
         ]"
       > 
         <Plus/> Nuevo Juego
       </button>
-    </div>
-    <div class="p-1 w-full bg-[#E3E3E3]">
       <button 
         @click="handleContinueSeries"
         :class="[
-          'flex w-full gap-2 justify-center py-1 transition-colors',
-          !newGame ? 'bg-blue-500 text-white' : 'bg-white'
+          'flex w-full gap-2 rounded-br-sm rounded-tr-sm justify-center py-1 transition-colors',
+          !newGame ? 'bg-white' : 'bg-[#E3E3E3]'
         ]"
       > 
         <Link/> Continuar Serie
       </button>
-    </div>
   </div>
 </template>
 
