@@ -1,11 +1,36 @@
 import type { Player } from "@/utils/schema"
 import { defineStore } from "pinia"
 import { computed, ref } from "vue"
+import { playerService } from "../service/PlayerService"
 
 export const usePlayerStore = defineStore('players', () =>{
   const players = ref<Player[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
+
+  // 🚀 Función que carga automáticamente si no hay datos
+  const ensurePlayersLoaded = async () => {
+    if (players.value.length === 0 && !loading.value) {
+      await fetchPlayers()
+    }
+  }
+
+  const fetchPlayers = async () => {
+    try{
+      loading.value = true
+      error.value = null
+
+      const fetchedPlayers = await playerService.getPlayers();
+
+      players.value = fetchedPlayers;
+
+    }catch (err) {
+      console.error("Error fetching players:", err)
+      error.value = "Error al cargar los jugadores"
+    }finally{
+      loading.value = false
+    }
+  }
 
   const totalPlayers = computed(()=>{
     return players.value.length
@@ -15,75 +40,23 @@ export const usePlayerStore = defineStore('players', () =>{
     return (id: number) => players.value.find(player => player.id === id)
   })
 
-  const getPlayersByName = computed(() => {
-    return (searchTerm: string) => 
-      players.value.filter(player => 
+  // ✅ NUEVA FUNCIÓN: Búsqueda por nombre como computed que retorna función
+  const searchPlayersByName = computed(() => {
+    return (searchTerm: string): Player[] => {
+      if (!searchTerm.trim()) return [];
+      
+      return players.value.filter(player => 
         player.nombre.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+      );
+    }
   })
-
-  const addPlayer = (player: Omit<Player, 'id'>) => {
-    const newId = players.value.length > 0 
-      ? Math.max(...players.value.map(p => p.id)) + 1 
-      : 1
-    
-    const newPlayer: Player = {
-      ...player,
-      id: newId
-    }
-    
-    players.value.push(newPlayer)
-    return newPlayer
-  }
-
-  const removePlayer = (id: number) => {
-    const index = players.value.findIndex(player => player.id === id)
-    if (index > -1) {
-      players.value.splice(index, 1)
-      return true
-    }
-    return false
-  }
 
   const clearPlayers = () => {
     players.value = []
   }
 
-  const isValidEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
-  }
-
   const setPlayers = (newPlayers: Player[]) => {
     players.value = newPlayers
-  }
-
-  const addPlayerWithValidation = (player: Omit<Player, 'id'>) => {
-    error.value = null
-    
-    // Validaciones
-    if (!player.nombre.trim()) {
-      error.value = 'El nombre es requerido'
-      return null
-    }
-    
-    if (!player.email.trim()) {
-      error.value = 'El email es requerido'
-      return null
-    }
-    
-    if (!isValidEmail(player.email)) {
-      error.value = 'El email no tiene un formato válido'
-      return null
-    }
-    
-    // Verificar email único
-    if (players.value.some(p => p.email === player.email)) {
-      error.value = 'Ya existe un jugador con este email'
-      return null
-    }
-    
-    return addPlayer(player)
   }
 
   return {
@@ -95,14 +68,13 @@ export const usePlayerStore = defineStore('players', () =>{
     // Getters
     totalPlayers,
     getPlayerById,
-    getPlayersByName,
     
     // Actions
-    addPlayer,
-    addPlayerWithValidation,
-    removePlayer,
+    searchPlayersByName,
     clearPlayers,
-    setPlayers
+    setPlayers,
+    fetchPlayers,
+    ensurePlayersLoaded
   }
 
 
