@@ -2,7 +2,7 @@
 import Header from '@/components/HeaderComponent.vue';
 import BotonSwitch from '@/components/HomeGolpeadoP/BotonSwitch.vue';
 import { ArrowLeft, Play, Plus, X, Users, Gamepad2, Search } from 'lucide-vue-next';
-import { ref, computed, onMounted, watch, nextTick } from 'vue';
+import { ref, computed, onMounted, watch, nextTick, onUnmounted } from 'vue';
 import { usePlayerStore } from '../stores/player';
 import type { Player, Serie } from '@/utils/schema';
 
@@ -55,10 +55,19 @@ onMounted(async () => {
     await playerStore.ensurePlayersLoaded(); // ✅ Esperar a que termine
     console.log('Jugadores cargados:', playerStore.players);
     console.log('Total de jugadores:', playerStore.totalPlayers);
+
+    // Agregar event listener para clicks fuera del dropdown
+    document.addEventListener('click', handleClickOutside);
+
   } catch (error) {
     console.error('Error al cargar jugadores:', error);
   }
-})
+});
+
+// 🧹 Cleanup al desmontar
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
 
 // 👥 Gestión de Jugadores
 const selectPlayerFromDropdown = (player: Player) => {
@@ -289,6 +298,8 @@ const startGame = () => {
             >
           </div>
 
+          
+
           <!-- 👥 Sección de jugadores -->
           <div class="space-y-2">
             <label class="text-sm font-semibold text-gray-700 flex items-center gap-2">
@@ -430,11 +441,11 @@ const startGame = () => {
           </div>
 
           <!-- 🎮 Botones de acción -->
-          <div class="flex gap-3 pt-4">
+          <div class="flex justify-center gap-3 pt-4">
             <button 
               type="submit"
               :disabled="!canStartGame"
-              class="btn text-white focus:ring-blue-500 flex-1 py-3 text-lg font-semibold 
+              class="flex items-center px-10 btn text-white focus:ring-blue-500 py-3 text-lg font-semibold 
                 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-all duration-200"
               :class="newGame ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'"
             >

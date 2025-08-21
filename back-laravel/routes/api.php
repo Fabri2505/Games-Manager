@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\GameController;
 use App\Http\Controllers\Api\RondaController;
+use App\Http\Controllers\Api\SerieController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -10,6 +11,7 @@ Route::post('/login', [UserController::class, 'login']);
 
 // Route::middleware('auth:sanctum')->group(function(){
     Route::get('players', [UserController::class,'index'])->name('players.index');
+    Route::get('series', [SerieController::class,'index'])->name('series.index');
     Route::post('user', [UserController::class,'store'])->name('user.create');
     Route::post('game', [GameController::class,'store'])->name('game.store');
     Route::put('game/cierre', [GameController::class,'update'])->name('game.cierre');
