@@ -13,8 +13,11 @@ Route::post('/login', [UserController::class, 'login']);
     Route::get('players', [UserController::class,'index'])->name('players.index');
     Route::get('series', [SerieController::class,'index'])->name('series.index');
     Route::post('user', [UserController::class,'store'])->name('user.create');
+    
+    Route::get('game', [GameController::class,'index'])->name('game.index');
     Route::post('game', [GameController::class,'store'])->name('game.store');
     Route::put('game/cierre', [GameController::class,'update'])->name('game.cierre');
+
     Route::post('rondas', [RondaController::class,'store'])->name('ronda.store');
     Route::put('ronda/{ronda}/set-winner', [RondaController::class,'setWinner'])->name('ronda.setWinner');
     Route::post('ronda/{ronda}/add-players', [RondaController::class,'addPlayers'])->name('ronda.addPlayers');

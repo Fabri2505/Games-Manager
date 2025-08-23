@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Game;
+use App\Models\Serie;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @OA\Tag(
@@ -19,7 +21,22 @@ class GameController extends Controller
      */
     public function index()
     {
-        //
+        $validated = request()->validate([
+            'user_id' => 'required|integer|exists:users,id',
+            'serie_id' => 'integer|exists:series,id'
+        ]);
+
+        Log::debug("user_id: " . $validated['user_id']);
+        Log::debug("serie_id: " . ($validated['serie_id'] ?? 'not provided'));
+
+        $games = Game::where('user_id', $validated['user_id'])
+            ->when($validated['serie_id'] ?? null, function ($query, $serieId) {
+                return $query->where('serie_id', $serieId);
+            })
+            ->get();
+        
+        Log::debug("Validado games obtenidos");
+        return response()->json($games);
     }
 
     /**
@@ -95,6 +112,7 @@ class GameController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'name_serie'=> 'string|max:100',
             'descrip' => 'required|string|max:255',
             'monto' => 'required|numeric|min:0',
             'user_id'=>'required|exists:users,id'
@@ -103,7 +121,20 @@ class GameController extends Controller
         $validated['fec_juego'] = now();
         $validated['fec_cierre'] = null;
 
-        $game = Game::create($validated);
+        $serie = Serie::create([
+            'name'=>$validated['name_serie'],
+            'user_id'=>$validated['user_id'],
+            'is_active'=>true
+        ]);
+
+        $game = Game::create([
+            'descrip' => $validated['descrip'],
+            'monto' => $validated['monto'],
+            'fec_juego' => $validated['fec_juego'],
+            'fec_cierre' => $validated['fec_cierre'],
+            'user_id' => $validated['user_id'],
+            'serie_id'=>$serie->id
+        ]);
 
         return response()->json([
             'game' => $game

@@ -16,7 +16,8 @@ class Game extends Model
         'monto',
         'fec_juego',
         'fec_cierre',
-        'user_id'
+        'user_id',
+        'serie_id'
     ];
 
     protected $casts = [

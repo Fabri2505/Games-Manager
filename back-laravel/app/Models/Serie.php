@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Serie extends Model
 {
     protected $fillable = [
+        'id',
         'name',
-        'description',
         'user_id',
         'is_active'
     ];
