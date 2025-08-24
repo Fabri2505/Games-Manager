@@ -6,6 +6,7 @@ export class GameService{
     async createGame(
         params:{name_serie:string, name_game:string, monto:number, user_id:number}
     ):Promise<GameCreated>{
+        console.log('Creando juego con parámetros:', params);
         const response = await fetch(`${this.baseUrl}`, {
             method: 'POST',
             headers: {

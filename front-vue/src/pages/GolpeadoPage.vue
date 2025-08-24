@@ -3,36 +3,54 @@ import CardJugador from '@/components/CardJugador.vue';
 import Header from '@/components/HeaderComponent.vue';
 import type { Player } from '@/utils/schema';
 import { ArrowLeft, Music } from 'lucide-vue-next';
+import { onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 
-const jugadores: Player[] = [
-  {
-    id: 1,
-    nombre: 'Carlos Mendoza',
-    email: 'carlos.mendoza@email.com'
-  },
-  {
-    id: 2,
-    nombre: 'Ana García',
-    email: 'ana.garcia@email.com'
-  },
-  {
-    id: 3,
-    nombre: 'Luis Fernando Rodriguez',
-    email: 'luis.rodriguez@email.com'
-  },
-  {
-    id: 4,
-    nombre: 'María',
-    email: 'maria@email.com'
-  },
-  {
-    id: 5,
-    nombre: 'Roberto Silva',
-    email: 'roberto.silva@email.com'
+const jugadores = ref<Player[]>([]);
+const route = useRoute();
+
+// Datos adicionales que podrías recibir
+const gameData = ref<any>(null)
+const rondaData = ref<any>(null)
+const serieName = ref<string>('')
+const gameName = ref<string>('')
+
+onMounted(() => {
+  // Obtener datos del state de la navegación
+  const players = history.state?.players as Player[]
+  const gameInfo = history.state?.gameData
+  const rondaInfo = history.state?.rondaData
+  
+  // Obtener datos de query params
+  serieName.value = route.query.serieName as string || ''
+  gameName.value = route.query.gameName as string || ''
+  
+  if (players && players.length > 0) {
+    jugadores.value = players
+    console.log('Jugadores recibidos:', players)
+  } else {
+    // Datos de respaldo si no se reciben jugadores
+    console.warn('No se recibieron jugadores, usando datos por defecto')
+    jugadores.value = [
+      {
+        id: 1,
+        nombre: 'Carlos Mendoza',
+        email: 'carlos.mendoza@email.com'
+      },
+      // ... otros jugadores por defecto
+    ]
   }
-];
-
-
+  
+  if (gameInfo) {
+    gameData.value = gameInfo
+    console.log('Datos del juego:', gameInfo)
+  }
+  
+  if (rondaInfo) {
+    rondaData.value = rondaInfo
+    console.log('Datos de la ronda:', rondaInfo)
+  }
+})
 
 </script>
 

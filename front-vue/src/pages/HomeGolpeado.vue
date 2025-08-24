@@ -8,6 +8,7 @@ import type { Player, Serie } from '@/utils/schema';
 import {serieService} from '@/service/SerieService';
 import { gameService } from '@/service/GameService';
 import { rondaService } from '@/service/RondaService';
+import router from '@/router';
 
 const playerStore = usePlayerStore();
 
@@ -59,6 +60,19 @@ const createNewGameorAsignToSerie = async() => {
     const rondaResponse = await rondaService.createRonda({
       game_id: gameResponse.id_juego,
       participantes: selectedPlayers.value.map(player => player.id),
+    });
+
+    await router.push({
+      name:'Golpeado',
+      query:{
+        serieName: serieName.value,
+        gameName: gameName.value
+      },
+      state: {
+        players: selectedPlayers.value,        // Lista de jugadores
+        gameData: JSON.stringify(gameResponse),               // Datos del juego creado
+        rondaData: JSON.stringify(rondaResponse)             // Datos de la ronda
+      }
     });
 
     console.log('Ronda creada exitosamente:', rondaResponse);
