@@ -113,7 +113,7 @@ class GameController extends Controller
     {
         $validated = $request->validate([
             'name_serie'=> 'string|max:100',
-            'descrip' => 'required|string|max:255',
+            'name_game' => 'required|string|max:100',
             'monto' => 'required|numeric|min:0',
             'user_id'=>'required|exists:users,id'
         ]);
@@ -128,7 +128,7 @@ class GameController extends Controller
         ]);
 
         $game = Game::create([
-            'descrip' => $validated['descrip'],
+            'name' => $validated['name_game'],
             'monto' => $validated['monto'],
             'fec_juego' => $validated['fec_juego'],
             'fec_cierre' => $validated['fec_cierre'],

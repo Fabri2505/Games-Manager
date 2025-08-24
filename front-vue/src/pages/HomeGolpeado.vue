@@ -5,14 +5,19 @@ import { ArrowLeft, Play, Plus, X, Users, Gamepad2, Search } from 'lucide-vue-ne
 import { ref, computed, onMounted, watch, nextTick, onUnmounted } from 'vue';
 import { usePlayerStore } from '../stores/player';
 import type { Player, Serie } from '@/utils/schema';
+import {serieService} from '@/service/SerieService';
+import { gameService } from '@/service/GameService';
+import { rondaService } from '@/service/RondaService';
 
 const playerStore = usePlayerStore();
 
 const newGame = ref<boolean>(true);
+const serieName = ref<string>('');
 const gameName = ref<string>('');
 const playerName = ref<string>('');
 const selectedPlayers = ref<Player[]>([]);
-const selectedSeries = ref<string>('');
+const montoValue = ref<number|null>(null);
+const selectedSerie = ref<Serie|null>(null);
 
 const series = ref<Serie[]>([]);
 
@@ -24,9 +29,44 @@ const canStartGame = computed(() => {
   if (newGame.value) {
     return gameName.value.trim() !== '' && selectedPlayers.value.length >= 2;
   } else {
-    return selectedSeries.value !== '' && gameName.value.trim() !== '' && selectedPlayers.value.length >= 2;
+    return selectedSerie.value !== null && gameName.value.trim() !== '' && selectedPlayers.value.length >= 2;
   }
 });
+
+const createNewGameorAsignToSerie = async() => {
+  if (!newGame.value) {
+    console.log('Continuar serie no implementado aún');
+    return;
+  }
+
+  // Validación previa
+  if (!serieName.value || !gameName.value || selectedPlayers.value.length === 0) {
+    console.error('Faltan datos requeridos');
+    return;
+  }
+
+  try{
+    const gameResponse = await gameService.createGame({
+      name_serie: serieName.value,
+      name_game: gameName.value,
+      monto: montoValue.value || 1,
+      user_id: 1
+    });
+
+    console.log('Juego creado exitosamente:', gameResponse);
+
+    // Crear ronda
+    const rondaResponse = await rondaService.createRonda({
+      game_id: gameResponse.id_juego,
+      participantes: selectedPlayers.value.map(player => player.id),
+    });
+
+    console.log('Ronda creada exitosamente:', rondaResponse);
+
+  }catch(error){
+    console.error('Error al crear juego o ronda:', error);
+  }
+}
 
 const filteredPlayers = computed(() => {
   if (!playerName.value.trim()) return [];
@@ -49,13 +89,24 @@ watch(filteredPlayers, (newFiltered) => {
   showDropdown.value = playerName.value.trim() !== '' && newFiltered.length > 0;
 });
 
+watch(serieName, (newValue) => {
+  console.log('Nombre de serie cambiado:', newValue);
+});
+
 onMounted(async () => {
   console.log('HomeGolpeado montado');
   try {
     await playerStore.ensurePlayersLoaded(); // ✅ Esperar a que termine
+    await serieService.getSeries({user_id:1,is_active:true}).then(fetchedSeries => {
+      series.value = fetchedSeries;
+    });
+
+    if (series.value.length > 0 && !selectedSerie.value) {
+      selectedSerie.value = series.value[0];
+    }
     console.log('Jugadores cargados:', playerStore.players);
     console.log('Total de jugadores:', playerStore.totalPlayers);
-
+    
     // Agregar event listener para clicks fuera del dropdown
     document.addEventListener('click', handleClickOutside);
 
@@ -118,7 +169,7 @@ const handleGameType = (isNewGame: boolean) => {
   newGame.value = isNewGame;
   gameName.value = '';
   selectedPlayers.value = [];
-  selectedSeries.value = '';
+  selectedSerie.value = null;
   playerName.value = '';
   showDropdown.value = false;
 };
@@ -166,7 +217,7 @@ const handleClickOutside = (event: Event) => {
 const clearForm = () => {
   gameName.value = '';
   selectedPlayers.value = [];
-  selectedSeries.value = '';
+  selectedSerie.value = null;
   playerName.value = '';
   showDropdown.value = false;
 };
@@ -188,7 +239,7 @@ const startGame = () => {
       isNewGame: newGame.value,
       gameName: gameName.value,
       players: selectedPlayers.value,
-      selectedSeries: selectedSeries.value
+      selectedSerie: selectedSerie.value
     });
     // Aquí iría la lógica para iniciar el juego
   }
@@ -256,30 +307,50 @@ const startGame = () => {
         <form @submit.prevent="startGame" class="space-y-6">
           <!-- 🎮 Selector de serie existente (solo para continuar serie) -->
           <div v-if="!newGame" class="space-y-2">
-            <label for="seriesSelect" class="block text-sm font-semibold text-gray-700">
+            <label for="serieSelect" class="block text-sm font-semibold text-gray-700">
               Seleccionar serie existente
             </label>
             <select 
-              id="seriesSelect"
-              v-model="selectedSeries" 
+              id="serieSelect"
+              v-model="selectedSerie" 
               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 
                 focus:ring-green-500 focus:border-transparent transition-all duration-200
                 text-gray-900"
               required
             >
-              <option value="" disabled>Selecciona una serie...</option>
+              <option value="null">Selecciona una serie...</option>
               <option 
                 v-for="serie in series" 
                 :key="serie.id" 
-                :value="serie.name"
+                :value="serie"
               >
-                {{ serie.name }} ({{ serie.gameId }} juegos) - Último: {{ serie.name }}
+                {{ serie.name }} ({{ serie.games }} juegos)
               </option>
             </select>
             <p class="text-sm text-gray-500">
               💡 Los puntos se acumularán con los juegos anteriores de esta serie
             </p>
           </div>
+
+          <!-- 🎲 Nombre de la serie -->
+          <div v-if="newGame">
+            <div class="space-y-2">
+              <label for="serieName" class="block text-sm font-semibold text-gray-700">
+                Nombre de la serie
+              </label>
+              <input 
+                id="serieName"
+                v-model="serieName"
+                type="text" 
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 
+                  focus:border-transparent transition-all duration-200 text-gray-900
+                  focus:ring-blue-500"
+                placeholder="Ej: Primera serie de agosto"
+                required
+              >
+            </div>
+          </div>
+           
 
           <!-- ✏️ Nombre del juego -->
           <div class="space-y-2">
@@ -298,7 +369,24 @@ const startGame = () => {
             >
           </div>
 
-          
+          <!-- 🎲 Nombre de la serie -->
+          <div v-if="newGame">
+            <div class="space-y-2">
+              <label for="montoValue" class="block text-sm font-semibold text-gray-700">
+                Monto por juego (en S/)
+              </label>
+              <input 
+                id="montoValue"
+                v-model="montoValue"
+                type="number" 
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 
+                  focus:border-transparent transition-all duration-200 text-gray-900
+                  focus:ring-blue-500"
+                placeholder="1, 2, 5, 10, etc."
+                required
+              >
+            </div>
+          </div>
 
           <!-- 👥 Sección de jugadores -->
           <div class="space-y-2">
@@ -445,6 +533,7 @@ const startGame = () => {
             <button 
               type="submit"
               :disabled="!canStartGame"
+              @click="createNewGameorAsignToSerie()"
               class="flex items-center px-10 btn text-white focus:ring-blue-500 py-3 text-lg font-semibold 
                 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-all duration-200"
               :class="newGame ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'"

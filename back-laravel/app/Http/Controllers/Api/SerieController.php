@@ -18,13 +18,12 @@ class SerieController extends Controller
             'is_active' => 'boolean'
         ]);
 
-        $query = Serie::where('user_id', $validated['user_id']);
-
-        if (isset($validated['is_active'])) {
-            $query->where('is_active', $validated['is_active']);
-        }
-
-        $series = $query->get();
+        $series = Serie::where('user_id', $validated['user_id'])
+            ->when($validated['is_active'] ?? null, function ($query, $isActive) {
+                return $query->where('is_active', $isActive);
+            })
+            ->withCount('games')
+            ->get();
 
         return response()->json($series);
     }

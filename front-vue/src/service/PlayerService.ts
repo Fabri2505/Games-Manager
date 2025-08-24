@@ -1,26 +1,34 @@
-import type { Player } from "@/utils/schema";
+import type { Player, PlayerResponse } from "@/utils/schema";
 
 export class PlayerService{
-    private baseUrl = "http://localhost:8000/api";
+    private baseUrl = "http://localhost:8000/api/players";
 
     async getPlayers():Promise<Player[]>{
-        const response = await fetch(`${this.baseUrl}/players`);
+        try{
+            const response = await fetch(`${this.baseUrl}`);
 
-        if(!response.ok){
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+            if(!response.ok){
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+            }
+
+            const data = await response.json();
+            const players = data.players || data;
+
+            // Validar que realmente tenemos un array
+            if (!Array.isArray(players)) {
+                throw new Error('La respuesta de la API no contiene un array válido de jugadores');
+            }
+
+            // ✅ Mapear los datos de la API a tu interface
+            return players.map((player: PlayerResponse) => ({
+                id: player.id,
+                email: player.email,
+                nombre: `${player.name} ${player.ape}`
+            }));
+        }catch(error){
+            console.error("Error fetching players:", error);
+            throw error; // Re-lanzar el error para que pueda ser manejado por el llamador
         }
-
-        const data = await response.json();
-        const players = data.players || data;
-
-        // ✅ Mapear los datos de la API a tu interface
-        return players.map((player: any) => ({
-            id: player.id,
-            email: player.email,
-            nombre: `${player.name} ${player.ape}`, // Combinar name y ape
-            // Agregar otras propiedades que necesites
-        }));
-
     }
 
 }

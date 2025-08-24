@@ -12,7 +12,7 @@ class Game extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'descrip',
+        'name',
         'monto',
         'fec_juego',
         'fec_cierre',
