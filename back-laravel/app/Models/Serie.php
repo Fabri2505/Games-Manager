@@ -10,7 +10,8 @@ class Serie extends Model
         'id',
         'name',
         'user_id',
-        'is_active'
+        'is_active',
+        'pagado'
     ];
 
     public function games()

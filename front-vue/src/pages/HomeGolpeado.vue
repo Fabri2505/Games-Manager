@@ -54,12 +54,19 @@ const createNewGameorAsignToSerie = async() => {
       user_id: 1
     });
 
-    console.log('Juego creado exitosamente:', gameResponse);
+    // console.log('Juego creado exitosamente:', gameResponse);
 
     // Crear ronda
     const rondaResponse = await rondaService.createRonda({
       game_id: gameResponse.id_juego,
       participantes: selectedPlayers.value.map(player => player.id),
+    });
+
+    console.log('Datos de la ronda');
+    console.log({
+      players: selectedPlayers.value,
+      gameData: gameResponse,
+      rondaData: rondaResponse
     });
 
     await router.push({
@@ -74,8 +81,6 @@ const createNewGameorAsignToSerie = async() => {
         rondaData: JSON.stringify(rondaResponse)             // Datos de la ronda
       }
     });
-
-    console.log('Ronda creada exitosamente:', rondaResponse);
 
   }catch(error){
     console.error('Error al crear juego o ronda:', error);
@@ -247,19 +252,6 @@ const refreshPlayers = async () => {
 };
 
 
-const startGame = () => {
-  if (canStartGame.value) {
-    console.log('Iniciando juego:', {
-      isNewGame: newGame.value,
-      gameName: gameName.value,
-      players: selectedPlayers.value,
-      selectedSerie: selectedSerie.value
-    });
-    // Aquí iría la lógica para iniciar el juego
-  }
-};
-
-
 
 </script>
 
@@ -318,7 +310,7 @@ const startGame = () => {
         </div>
 
         <!-- 📝 Formulario -->
-        <form @submit.prevent="startGame" class="space-y-6">
+        <form @submit.prevent="createNewGameorAsignToSerie" class="space-y-6">
           <!-- 🎮 Selector de serie existente (solo para continuar serie) -->
           <div v-if="!newGame" class="space-y-2">
             <label for="serieSelect" class="block text-sm font-semibold text-gray-700">
@@ -547,7 +539,6 @@ const startGame = () => {
             <button 
               type="submit"
               :disabled="!canStartGame"
-              @click="createNewGameorAsignToSerie()"
               class="flex items-center px-10 btn text-white focus:ring-blue-500 py-3 text-lg font-semibold 
                 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-all duration-200"
               :class="newGame ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'"

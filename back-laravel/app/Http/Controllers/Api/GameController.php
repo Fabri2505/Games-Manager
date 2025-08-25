@@ -225,6 +225,27 @@ class GameController extends Controller
     }
 
     /**
+     * Pausar o reanudar el juego.
+     */
+    public function paused(Request $request)
+    {
+        $validated = $request->validate([
+            'game_id' => 'required|exists:games,id',
+            'paused' => 'required|boolean'
+        ]);
+
+        $game = Game::findOrFail($validated['game_id']);
+
+        $game->pausado = $validated['paused'];
+        $game->save();  
+        return response()->json([
+            'success' => true,
+            'message' => $validated['paused'] ? 'Juego pausado' : 'Juego reanudado',
+            'data' => $game
+        ]);
+    }
+    
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)

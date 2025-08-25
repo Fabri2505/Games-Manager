@@ -17,6 +17,7 @@ class Game extends Model
         'fec_juego',
         'fec_cierre',
         'user_id',
+        'pausado',
         'serie_id'
     ];
 
