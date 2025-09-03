@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import CardJugador from '@/components/CardJugador.vue';
 import Header from '@/components/HeaderComponent.vue';
-import type { Player } from '@/utils/schema';
+import type { Participante, Player } from '@/utils/schema';
 import { ArrowLeft, Music } from 'lucide-vue-next';
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
+import { gameService } from '@/service/GameService';
 
 const jugadores = ref<Player[]>([]);
 const route = useRoute();
-const cantRonda = ref<number>(1); // Número de ronda actual
+const cantRonda = ref<number>(0); // Número de ronda actual
 
 // Datos adicionales que podrías recibir
 const gameData = ref<any>(null)
@@ -16,12 +17,12 @@ const rondaData = ref<any>(null)
 const serieName = ref<string>('')
 const gameName = ref<string>('')
 
-onMounted(() => {
+onMounted(async () => {
   // Obtener datos del state de la navegación
   try {
 
     // idGame desde params
-    const idGame = route.params.idGame;
+    const idGame = Number(route.params.idGame);
     // Parsear datos del state
     const playersJson = history.state?.players as string
     const gameDataJson = history.state?.gameData as string  
@@ -51,16 +52,33 @@ onMounted(() => {
     
     // Fallback si no hay datos
     if (!jugadores.value.length) {
+
+      const lastRondaResponse = await gameService.getLastRonda(idGame);
+
+      if (lastRondaResponse.success) {
+        rondaData.value = lastRondaResponse.data
+        cantRonda.value = lastRondaResponse.nro_ronda || 1
+        console.log('Última ronda obtenida del servidor:', rondaData.value)
+      } else {
+        console.error('Error al obtener la última ronda:', lastRondaResponse.message)
+      }
+
       console.warn('No se recibieron jugadores')
-      jugadores.value = [
-        {
-          id: 1,
-          nombre: 'Carlos Mendoza',
-          email: 'carlos.mendoza@email.com'
-        },
-        // ... otros jugadores por defecto
-      ]
-      // Tu código de respaldo aquí
+
+      const participaciones = lastRondaResponse.data.participantes;
+      jugadores.value = participaciones.map((p: Participante) => {
+        return {
+          id: p.user.id,
+          email: p.user.email,
+          nombre: `${p.user.name} ${p.user.ape}`
+          // Otros campos que puedas necesitar
+        } as Player
+      })
+
+      const analityData = await gameService.getAnalitycs(idGame);
+
+      console.log('Datos analíticos de la ronda:', analityData)
+      
     }
     
   } catch (error) {
@@ -68,6 +86,12 @@ onMounted(() => {
   }
   
 })
+
+const nuevaRonda = async () => {
+  // Lógica para iniciar una nueva ronda
+  cantRonda.value += 1;
+  // Aquí podrías agregar lógica para reiniciar estados, repartir cartas, etc.
+}
 
 </script>
 
@@ -89,7 +113,12 @@ onMounted(() => {
           <!-- bg-[#FFE27A] -->
           <div class="flex justify-between p-5">
             <h1 class="text-3xl text-center md:text-left font-bold">Mesa de Juego</h1>
-            <p>Ronda: {{ cantRonda }}</p>
+            <div v-if="cantRonda>0" class="flex gap-2 items-center">
+              <p>Ronda: {{ cantRonda }}</p>
+              <button class="bg-black text-white p-1 rounded-md"
+                @click="nuevaRonda">Nueva Ronda</button>
+            </div>
+            
           </div>
           <!-- #B3F5B9 -->
           <div class="m-auto">

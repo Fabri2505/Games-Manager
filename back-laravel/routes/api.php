@@ -17,6 +17,7 @@ Route::post('/login', [UserController::class, 'login']);
     Route::get('game', [GameController::class,'index'])->name('game.index');
     Route::get('game/{idGame}', [GameController::class,'getGame'])->name('game.getGame');
     Route::get('game/{idGame}/last-ronda', [GameController::class,'getLastRonda'])->name('game.getLastRonda');
+    Route::get('game/{idGame}/anality', [GameController::class,'getAnalityGame'])->name('game.getAnalityGame');
     //Route::get('game/actual', [GameController::class,'actual'])->name('game.actual');
     Route::post('game', [GameController::class,'store'])->name('game.store');
     Route::put('game/cierre', [GameController::class,'update'])->name('game.cierre');

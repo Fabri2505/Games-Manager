@@ -322,12 +322,20 @@ class GameController extends Controller
             ]);
         }
     }
-    
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+
+    public function getAnalityGame(string $game_id)
     {
-        //
+        $game = Game::findOrFail($game_id); // Verifica que el juego exista
+        $totalRondas = $game->rondas()->count();
+
+        $racha_result = $game->calcularJugadorEnRacha();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Análisis del juego obtenido exitosamente',
+            'racha' => $racha_result,
+            'total_rondas' => $totalRondas
+        ]);
     }
+
 }

@@ -1,4 +1,5 @@
 import type { GameCreated, LastRondaResponse } from "@/utils/schema";
+import type { AnalityRonda } from "@/utils/schema_ronda";
 
 export class GameService{
     private baseUrl = "http://localhost:8000/api/game";
@@ -44,6 +45,22 @@ export class GameService{
         }
 
         const data: LastRondaResponse = await response.json();
+        return data;
+    }
+
+    async getAnalitycs(id_game:number):Promise<AnalityRonda>{
+        const response = await fetch(`${this.baseUrl}/${id_game}/anality`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if(!response.ok){
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        }
+
+        const data: AnalityRonda = await response.json();
         return data;
     }
 }
