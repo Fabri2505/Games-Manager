@@ -1,4 +1,4 @@
-import type { GameCreated } from "@/utils/schema";
+import type { GameCreated, LastRondaResponse } from "@/utils/schema";
 
 export class GameService{
     private baseUrl = "http://localhost:8000/api/game";
@@ -24,14 +24,28 @@ export class GameService{
 
         return {
             id_juego: juegoCreado.id,
-            descripcion: juegoCreado.descrip,
+            name: juegoCreado.descrip,
             monto: juegoCreado.monto,
             fecha_juego: juegoCreado.fec_juego
         }
 
     }
 
-    // Aquí puedes agregar métodos relacionados con los juegos
+    async getLastRonda(id_game:number):Promise<LastRondaResponse>{
+        const response = await fetch(`${this.baseUrl}/${id_game}/last-ronda`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if(!response.ok){
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        }
+
+        const data: LastRondaResponse = await response.json();
+        return data;
+    }
 }
 
 export const gameService = new GameService();

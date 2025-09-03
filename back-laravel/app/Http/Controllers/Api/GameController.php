@@ -21,22 +21,54 @@ class GameController extends Controller
      */
     public function index()
     {
-        $validated = request()->validate([
-            'user_id' => 'required|integer|exists:users,id',
-            'serie_id' => 'integer|exists:series,id'
-        ]);
+        try {
+            $validated = request()->validate([
+                'user_id' => 'required|integer|exists:users,id',
+                'serie_id' => 'nullable|integer|exists:series,id' // nullable
+            ]);
 
-        Log::debug("user_id: " . $validated['user_id']);
-        Log::debug("serie_id: " . ($validated['serie_id'] ?? 'not provided'));
+            $games = Game::where('user_id', $validated['user_id'])
+                ->when($validated['serie_id'] ?? null, function ($query, $serieId) {
+                    return $query->where('serie_id', $serieId);
+                })
+                ->get();
+            
+            return response()->json([
+                'success' => true,
+                'data' => $games
+            ]);
 
-        $games = Game::where('user_id', $validated['user_id'])
-            ->when($validated['serie_id'] ?? null, function ($query, $serieId) {
-                return $query->where('serie_id', $serieId);
-            })
-            ->get();
-        
-        Log::debug("Validado games obtenidos");
-        return response()->json($games);
+        } catch (\Exception $e) {
+            Log::error('Error en GameController@index: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+
+    }
+
+    public function getGame($idGame)
+    {
+        try {
+            $game = Game::with([
+                'rondas' => function ($query) {
+                    $query->with('participantes.user')
+                            ->orderBy('created_at', 'asc');
+                }
+            ])->findOrFail($idGame);
+
+            return response()->json([
+                'success' => true,
+                'data' => $game
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error en GameController@getGame: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -141,6 +173,31 @@ class GameController extends Controller
         ]);
     }
 
+    // public function actual(Request $request)
+    // {
+    //     $validated = $request->validate([
+    //         'user_id'=>'required|exists:users,id'
+    //     ]);
+
+    //     $game = Game::where('user_id', $validated['user_id'])
+    //         ->whereNull('fec_cierre')
+    //         ->where('pausado', false)
+    //         ->latest('fec_juego')
+    //         ->first();
+
+    //     if (!$game) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'No hay un juego activo para este usuario.'
+    //         ], 404);
+    //     }
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'data' => $game
+    //     ]);
+    // }
+
     /**
      * Display the specified resource.
      */
@@ -243,6 +300,27 @@ class GameController extends Controller
             'message' => $validated['paused'] ? 'Juego pausado' : 'Juego reanudado',
             'data' => $game
         ]);
+    }
+
+    public function getLastRonda(string $game_id)
+    {
+        $game = Game::findOrFail($game_id); // Verifica que el juego exista
+
+        $lastRonda = $game->rondas()->with('participantes.user')->orderBy('created_at', 'desc')->first();
+
+        if (!$lastRonda) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No hay rondas para este juego.'
+            ], 404);
+        }else {
+            return response()->json([
+                'success' => true,
+                'message' => 'Última ronda obtenida exitosamente',
+                'data' => $lastRonda,
+                'nro_ronda' => $game->rondas()->count()
+            ]);
+        }
     }
     
     /**

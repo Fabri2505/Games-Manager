@@ -54,7 +54,7 @@ const routes:RouteRecordRaw[] = [
     }
   },
   {
-    path: '/golpeado',
+    path: '/golpeado/:idGame',
     name: 'Golpeado', 
     component: GolpeadoPage,
     meta: { 

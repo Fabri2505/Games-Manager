@@ -43,7 +43,7 @@ export interface GameCreateResponse {
 
 export interface GameCreated {
     id_juego: number;
-    descripcion: string;
+    name: string;
     monto: string;
     fecha_juego: string;
 }
@@ -89,4 +89,8 @@ export interface RondaApiResponse {
     success: boolean;
     message: string;
     data: RondaData;
+}
+
+export interface LastRondaResponse extends RondaApiResponse {
+    nro_ronda: number; // Número total de rondas en el juego
 }

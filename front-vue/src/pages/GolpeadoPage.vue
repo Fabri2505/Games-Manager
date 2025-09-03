@@ -8,6 +8,7 @@ import { useRoute } from 'vue-router';
 
 const jugadores = ref<Player[]>([]);
 const route = useRoute();
+const cantRonda = ref<number>(1); // Número de ronda actual
 
 // Datos adicionales que podrías recibir
 const gameData = ref<any>(null)
@@ -17,39 +18,55 @@ const gameName = ref<string>('')
 
 onMounted(() => {
   // Obtener datos del state de la navegación
-  const players = history.state?.players as Player[]
-  const gameInfo = history.state?.gameData
-  const rondaInfo = history.state?.rondaData
-  
-  // Obtener datos de query params
-  serieName.value = route.query.serieName as string || ''
-  gameName.value = route.query.gameName as string || ''
-  
-  if (players && players.length > 0) {
-    jugadores.value = players
-    console.log('Jugadores recibidos:', players)
-  } else {
-    // Datos de respaldo si no se reciben jugadores
-    console.warn('No se recibieron jugadores, usando datos por defecto')
-    jugadores.value = [
-      {
-        id: 1,
-        nombre: 'Carlos Mendoza',
-        email: 'carlos.mendoza@email.com'
-      },
-      // ... otros jugadores por defecto
-    ]
+  try {
+
+    // idGame desde params
+    const idGame = route.params.idGame;
+    // Parsear datos del state
+    const playersJson = history.state?.players as string
+    const gameDataJson = history.state?.gameData as string  
+    const rondaDataJson = history.state?.rondaData as string
+    
+    // Obtener query params
+    serieName.value = route.query.serieName as string || ''
+    gameName.value = route.query.gameName as string || ''
+    
+    // Parsear players
+    if (playersJson) {
+      jugadores.value = JSON.parse(playersJson) as Player[]
+      console.log('Jugadores recibidos:', jugadores.value)
+    }
+    
+    // Parsear gameData  
+    if (gameDataJson) {
+      gameData.value = JSON.parse(gameDataJson)
+      console.log('Datos del juego:', gameData.value)
+    }
+    
+    // Parsear rondaData
+    if (rondaDataJson) {
+      rondaData.value = JSON.parse(rondaDataJson)  
+      console.log('Datos de la ronda:', rondaData.value)
+    }
+    
+    // Fallback si no hay datos
+    if (!jugadores.value.length) {
+      console.warn('No se recibieron jugadores')
+      jugadores.value = [
+        {
+          id: 1,
+          nombre: 'Carlos Mendoza',
+          email: 'carlos.mendoza@email.com'
+        },
+        // ... otros jugadores por defecto
+      ]
+      // Tu código de respaldo aquí
+    }
+    
+  } catch (error) {
+    console.error('Error al parsear datos:', error)
   }
   
-  if (gameInfo) {
-    gameData.value = gameInfo
-    console.log('Datos del juego:', gameInfo)
-  }
-  
-  if (rondaInfo) {
-    rondaData.value = rondaInfo
-    console.log('Datos de la ronda:', rondaInfo)
-  }
 })
 
 </script>
@@ -70,8 +87,9 @@ onMounted(() => {
       <div class="lg:col-span-2">
         <div class="rounded-lg card_template text-card-foreground shadow-2xs h-full">
           <!-- bg-[#FFE27A] -->
-          <div class="p-5">
+          <div class="flex justify-between p-5">
             <h1 class="text-3xl text-center md:text-left font-bold">Mesa de Juego</h1>
+            <p>Ronda: {{ cantRonda }}</p>
           </div>
           <!-- #B3F5B9 -->
           <div class="m-auto">

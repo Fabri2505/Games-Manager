@@ -71,12 +71,15 @@ const createNewGameorAsignToSerie = async() => {
 
     await router.push({
       name:'Golpeado',
+      params:{
+        idGame: gameResponse.id_juego
+      },
       query:{
         serieName: serieName.value,
         gameName: gameName.value
       },
       state: {
-        players: selectedPlayers.value,        // Lista de jugadores
+        players: JSON.stringify(selectedPlayers.value),        // Lista de jugadores
         gameData: JSON.stringify(gameResponse),               // Datos del juego creado
         rondaData: JSON.stringify(rondaResponse)             // Datos de la ronda
       }
@@ -256,7 +259,7 @@ const refreshPlayers = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen">
     <!-- 🎯 Header del componente -->
     <Header 
       :titulo="'Configurar Juego'"
