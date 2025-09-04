@@ -2,7 +2,7 @@
 import CardJugador from '@/components/CardJugador.vue';
 import Header from '@/components/HeaderComponent.vue';
 import type { Participante, Player } from '@/utils/schema';
-import { ArrowLeft, Music } from 'lucide-vue-next';
+import { ArrowLeft, ChartColumnBig, Clock, Flame, Music } from 'lucide-vue-next';
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { gameService } from '@/service/GameService';
@@ -106,7 +106,21 @@ const nuevaRonda = async () => {
         <button class="flex p-2 gap-2 boton_header">Play</button>
       </template>
     </Header>
-
+    <div class="flex mb-5">
+      <div class="rounded-2xl p-4 bg-gradient-to-r from-red-500 to-red-600 shadow-lg flex items-center justify-between">
+          <div class="flex items-center gap-4">
+              <Flame class="w-8 h-8 text-yellow-300" />
+              <div>
+                  <h3 class="text-white font-semibold text-lg">Pedro Pablo</h3>
+                  <p class="text-white/90 text-sm">2 victorias seguidas</p>
+              </div>
+          </div>
+          <div class="bg-white/20 rounded-full px-4 py-2">
+              <span class="text-white font-bold text-lg">🔥</span>
+          </div>
+      </div>
+    </div>
+    
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-grow">
       <div class="lg:col-span-2">
         <div class="rounded-lg card_template text-card-foreground shadow-2xs h-full">
@@ -133,10 +147,61 @@ const nuevaRonda = async () => {
         </div>
       </div>
       <div class="space-y-6">
-        <div class="rounded-lg card_template shadow-2xs">
+        <div v-if="cantRonda==0" class="rounded-lg card_template shadow-2xs">
           <div class="p-6 py-8 text-center">
             <p class="text-muted-foreground">Añade jugadores para comenzar la partida</p>
           </div>
+        </div>
+        <!-- Distribución de Victorias -->
+        <div  class="rounded-lg bg-white shadow-sm border-0 p-6">
+            <div class="flex items-center gap-2 mb-4">
+              <ChartColumnBig class="w-5 h-5 text-blue-500" />
+              <h3 class="text-lg font-semibold">Distribución de Victorias</h3>
+            </div>
+            
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium">PP</span>
+                    <div class="flex items-center gap-2 flex-1 mx-3">
+                        <div class="flex-1 bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full" style="width: 55%"></div>
+                        </div>
+                        <span class="text-sm font-medium">6</span>
+                        <span class="text-xs text-gray-500">55%</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium">JM</span>
+                    <div class="flex items-center gap-2 flex-1 mx-3">
+                        <div class="flex-1 bg-gray-200 rounded-full h-2">
+                            <div class="bg-pink-500 h-2 rounded-full" style="width: 20%"></div>
+                        </div>
+                        <span class="text-sm font-medium">5</span>
+                        <span class="text-xs text-gray-500">20%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Balance Juego Actual -->
+        <div class="rounded-lg bg-white shadow-sm border-0 p-6">
+            <div class="flex items-center gap-2 mb-4">
+              <Clock class="w-5 h-5 text-amber-500"/>
+              <h3 class="text-lg font-semibold">Balance Juego Actual</h3>
+            </div>
+            
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium">PP</span>
+                    <span class="text-sm font-semibold text-green-600">+51</span>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium">JM</span>
+                    <span class="text-sm font-semibold text-red-600">-51</span>
+                </div>
+            </div>
         </div>
       </div>
       
