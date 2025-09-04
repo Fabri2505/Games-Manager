@@ -16,6 +16,7 @@ const gameData = ref<any>(null)
 const rondaData = ref<any>(null)
 const serieName = ref<string>('')
 const gameName = ref<string>('')
+const racha = ref<boolean>(true) // Racha del jugador principal
 
 onMounted(async () => {
   // Obtener datos del state de la navegación
@@ -75,6 +76,15 @@ onMounted(async () => {
         } as Player
       })
 
+      jugadores.value = [
+        ...jugadores.value,
+        // Agregar jugadores ficticios si es necesario
+        { id: 999, email: 'dsd' , nombre: 'Jugador Ficticio' } ,
+        { id: 998, email: 'dsd' , nombre: 'Jugador Ficticio 2' },
+        { id: 997, email: 'dsd' , nombre: 'Jugador Ficticio 3' } ,
+        { id: 996, email: 'dsd' , nombre: 'Jugador Ficticio 4' }
+      ]
+
       const analityData = await gameService.getAnalitycs(idGame);
 
       console.log('Datos analíticos de la ronda:', analityData)
@@ -106,105 +116,157 @@ const nuevaRonda = async () => {
         <button class="flex p-2 gap-2 boton_header">Play</button>
       </template>
     </Header>
-    <div class="flex mb-5">
-      <div class="rounded-2xl p-4 bg-gradient-to-r from-red-500 to-red-600 shadow-lg flex items-center justify-between">
-          <div class="flex items-center gap-4">
-              <Flame class="w-8 h-8 text-yellow-300" />
-              <div>
-                  <h3 class="text-white font-semibold text-lg">Pedro Pablo</h3>
-                  <p class="text-white/90 text-sm">2 victorias seguidas</p>
-              </div>
-          </div>
-          <div class="bg-white/20 rounded-full px-4 py-2">
-              <span class="text-white font-bold text-lg">🔥</span>
-          </div>
-      </div>
-    </div>
-    
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-grow">
-      <div class="lg:col-span-2">
-        <div class="rounded-lg card_template text-card-foreground shadow-2xs h-full">
-          <!-- bg-[#FFE27A] -->
-          <div class="flex justify-between p-5">
-            <h1 class="text-3xl text-center md:text-left font-bold">Mesa de Juego</h1>
-            <div v-if="cantRonda>0" class="flex gap-2 items-center">
-              <p>Ronda: {{ cantRonda }}</p>
-              <button class="bg-black text-white p-1 rounded-md"
-                @click="nuevaRonda">Nueva Ronda</button>
-            </div>
-            
-          </div>
-          <!-- #B3F5B9 -->
-          <div class="m-auto">
-            <div class="flex flex-wrap gap-4 justify-center md:justify-start player-list">
-              <CardJugador
-                v-for="jugador in jugadores"
-                :key="jugador.id"
-                :player="jugador"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="space-y-6">
-        <div v-if="cantRonda==0" class="rounded-lg card_template shadow-2xs">
-          <div class="p-6 py-8 text-center">
-            <p class="text-muted-foreground">Añade jugadores para comenzar la partida</p>
-          </div>
-        </div>
-        <!-- Distribución de Victorias -->
-        <div  class="rounded-lg bg-white shadow-sm border-0 p-6">
-            <div class="flex items-center gap-2 mb-4">
-              <ChartColumnBig class="w-5 h-5 text-blue-500" />
-              <h3 class="text-lg font-semibold">Distribución de Victorias</h3>
-            </div>
-            
-            <div class="space-y-3">
-                <div class="flex items-center justify-between">
-                    <span class="text-sm font-medium">PP</span>
-                    <div class="flex items-center gap-2 flex-1 mx-3">
-                        <div class="flex-1 bg-gray-200 rounded-full h-2">
-                            <div class="bg-blue-500 h-2 rounded-full" style="width: 55%"></div>
-                        </div>
-                        <span class="text-sm font-medium">6</span>
-                        <span class="text-xs text-gray-500">55%</span>
-                    </div>
+    <!-- Sección de estadísticas superior -->
+    <div class="rounded-2xl p-6 bg-gradient-to-r from-red-500 to-red-600 shadow-lg mb-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <svg class="w-10 h-10 text-yellow-300" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.28 2.16.28 2.16-.36 2.73-2.18 4.78-4.49 6.68z"/>
+                </svg>
+                <div>
+                    <h3 class="text-white font-bold text-2xl">Pedro Pablo</h3>
+                    <p class="text-white/90 text-lg">🔥 2 victorias seguidas</p>
                 </div>
-                
-                <div class="flex items-center justify-between">
-                    <span class="text-sm font-medium">JM</span>
-                    <div class="flex items-center gap-2 flex-1 mx-3">
-                        <div class="flex-1 bg-gray-200 rounded-full h-2">
-                            <div class="bg-pink-500 h-2 rounded-full" style="width: 20%"></div>
-                        </div>
-                        <span class="text-sm font-medium">5</span>
-                        <span class="text-xs text-gray-500">20%</span>
-                    </div>
+            </div>
+            <div class="bg-white/20 rounded-full px-6 py-3">
+                <span class="text-white font-bold text-xl">🔥</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Versión compacta con 2 cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <!-- Card 1: Info de partida -->
+        <div class="bg-white rounded-xl p-4 shadow-sm">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <h4 class="font-semibold text-gray-800">Estado de Partida</h4>
+            </div>
+            <div class="space-y-2">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Ronda:</span>
+                    <span class="font-medium">{{cantRonda}}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Jugadores:</span>
+                    <span class="font-medium">2 activos</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Tiempo:</span>
+                    <span class="font-medium">15 minutos</span>
                 </div>
             </div>
         </div>
 
-        <!-- Balance Juego Actual -->
-        <div class="rounded-lg bg-white shadow-sm border-0 p-6">
-            <div class="flex items-center gap-2 mb-4">
-              <Clock class="w-5 h-5 text-amber-500"/>
-              <h3 class="text-lg font-semibold">Balance Juego Actual</h3>
-            </div>
-            
-            <div class="space-y-3">
-                <div class="flex items-center justify-between">
-                    <span class="text-sm font-medium">PP</span>
-                    <span class="text-sm font-semibold text-green-600">+51</span>
+        <!-- Card 2: Líder actual -->
+        <div class="bg-white rounded-xl p-4 shadow-sm">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732L14.146 12.8l-1.179 4.456a1 1 0 01-1.934 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732L9.854 7.2l1.179-4.456A1 1 0 0112 2z" clip-rule="evenodd"></path>
+                    </svg>
                 </div>
-                
-                <div class="flex items-center justify-between">
-                    <span class="text-sm font-medium">JM</span>
-                    <span class="text-sm font-semibold text-red-600">-51</span>
+                <h4 class="font-semibold text-gray-800">Líder Actual</h4>
+            </div>
+            <div class="space-y-2">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Nombre:</span>
+                    <span class="font-medium">Pedro Pablo</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Puntaje:</span>
+                    <span class="font-medium text-green-600">+51</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Victorias:</span>
+                    <span class="font-medium">6 (55%)</span>
                 </div>
             </div>
         </div>
-      </div>
-      
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2">
+          <div class="rounded-lg card_template text-card-foreground shadow-2xs h-full">
+            <!-- bg-[#FFE27A] -->
+            <div class="flex justify-between p-5">
+              <h1 class="text-3xl text-center md:text-left font-bold">Mesa de Juego</h1>
+              <div class="flex gap-2 items-center">
+                <button class="bg-black text-white p-2 rounded-md"
+                  @click="nuevaRonda">Nueva Ronda</button>
+              </div>
+              
+            </div>
+            <!-- #B3F5B9 -->
+            <div class="m-auto">
+              <div class="flex flex-wrap gap-2 justify-center md:justify-start player-list">
+                <CardJugador
+                  v-for="jugador in jugadores"
+                  :key="jugador.id"
+                  :player="jugador"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="space-y-4">
+            <div  class="rounded-lg bg-white shadow-sm border-0 p-6">
+              <div class="flex items-center gap-2 mb-4">
+                <ChartColumnBig class="w-5 h-5 text-blue-500" />
+                <h3 class="text-lg font-semibold">Distribución de Victorias</h3>
+              </div>
+              
+              <div class="space-y-3">
+                  <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">PP</span>
+                      <div class="flex items-center gap-2 flex-1 mx-3">
+                          <div class="flex-1 bg-gray-200 rounded-full h-2">
+                              <div class="bg-blue-500 h-2 rounded-full" style="width: 55%"></div>
+                          </div>
+                          <span class="text-sm font-medium">6</span>
+                          <span class="text-xs text-gray-500">55%</span>
+                      </div>
+                  </div>
+                  
+                  <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">JM</span>
+                      <div class="flex items-center gap-2 flex-1 mx-3">
+                          <div class="flex-1 bg-gray-200 rounded-full h-2">
+                              <div class="bg-pink-500 h-2 rounded-full" style="width: 20%"></div>
+                          </div>
+                          <span class="text-sm font-medium">5</span>
+                          <span class="text-xs text-gray-500">20%</span>
+                      </div>
+                  </div>
+              </div>
+          </div>
+
+          <!-- Balance Juego Actual -->
+          <div class="rounded-lg bg-white shadow-sm border-0 p-6">
+              <div class="flex items-center gap-2 mb-4">
+                <Clock class="w-5 h-5 text-amber-500"/>
+                <h3 class="text-lg font-semibold">Balance Juego Actual</h3>
+              </div>
+              
+              <div class="space-y-3">
+                  <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">PP</span>
+                      <span class="text-sm font-semibold text-green-600">+51</span>
+                  </div>
+                  
+                  <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium">JM</span>
+                      <span class="text-sm font-semibold text-red-600">-51</span>
+                  </div>
+              </div>
+          </div>
+        </div>
     </div>
 </template>
 

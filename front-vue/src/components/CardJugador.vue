@@ -5,7 +5,7 @@
     </div>
     <div class="player-info">
       <h3 class="player-name">{{ player.nombre }}</h3>
-      <p class="player-email">{{ player.email }}</p>
+      <p class="player-email line-clamp-1">{{ player.email }}</p>
     </div>
   </div>
 </template>
