@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import CardJugador from '@/components/CardJugador.vue';
 import Header from '@/components/HeaderComponent.vue';
+import CardEstadist from '@/components/GolpeadoPage/CardEstadist.vue';
 import type { Participante, Player } from '@/utils/schema';
-import { ArrowLeft, ChartColumnBig, Clock, Flame, Music } from 'lucide-vue-next';
-import { onMounted, ref } from 'vue';
+import { ArrowLeft, ChartColumnBig, Clock, Guitar, Music, Sparkles } from 'lucide-vue-next';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { gameService } from '@/service/GameService';
 
@@ -12,11 +13,40 @@ const route = useRoute();
 const cantRonda = ref<number>(0); // Número de ronda actual
 
 // Datos adicionales que podrías recibir
-const gameData = ref<any>(null)
-const rondaData = ref<any>(null)
-const serieName = ref<string>('')
 const gameName = ref<string>('')
 const racha = ref<boolean>(true) // Racha del jugador principal
+
+const gameStateItems = computed(() => [
+  {
+    label: 'Ronda',
+    value: cantRonda.value.toString()
+  },
+  {
+    label: 'Jugadores',
+    value: `${jugadores.value.length} activos`
+  },
+  {
+    label: 'Tiempo',
+    value: '15 minutos'
+  }
+]);
+
+const leaderItems = [
+  {
+    label: 'Nombre',
+    value: 'Pedro Pablo'
+  },
+  {
+    label: 'Puntaje',
+    value: '+51',
+    valueClass: 'text-green-600'
+  },
+  {
+    label: 'Victorias',
+    value: '6 (55%)'
+  }
+];
+
 
 onMounted(async () => {
   // Obtener datos del state de la navegación
@@ -30,7 +60,6 @@ onMounted(async () => {
     const rondaDataJson = history.state?.rondaData as string
     
     // Obtener query params
-    serieName.value = route.query.serieName as string || ''
     gameName.value = route.query.gameName as string || ''
     
     // Parsear players
@@ -39,27 +68,31 @@ onMounted(async () => {
       console.log('Jugadores recibidos:', jugadores.value)
     }
     
-    // Parsear gameData  
-    if (gameDataJson) {
-      gameData.value = JSON.parse(gameDataJson)
-      console.log('Datos del juego:', gameData.value)
-    }
+    // // Parsear gameData  
+    // if (gameDataJson) {
+    //   gameData.value = JSON.parse(gameDataJson)
+    //   console.log('Datos del juego:', gameData.value)
+    // }
     
-    // Parsear rondaData
-    if (rondaDataJson) {
-      rondaData.value = JSON.parse(rondaDataJson)  
-      console.log('Datos de la ronda:', rondaData.value)
-    }
+    // // Parsear rondaData
+    // if (rondaDataJson) {
+    //   rondaData.value = JSON.parse(rondaDataJson)  
+    //   console.log('Datos de la ronda:', rondaData.value)
+    // }
     
     // Fallback si no hay datos
     if (!jugadores.value.length) {
 
       const lastRondaResponse = await gameService.getLastRonda(idGame);
 
+      console.log('Respuesta de la última ronda:', lastRondaResponse)
+
+      gameName.value = lastRondaResponse.game.name;
+
       if (lastRondaResponse.success) {
-        rondaData.value = lastRondaResponse.data
+        // rondaData.value = lastRondaResponse.data
         cantRonda.value = lastRondaResponse.nro_ronda || 1
-        console.log('Última ronda obtenida del servidor:', rondaData.value)
+        // console.log('Última ronda obtenida del servidor:', rondaData.value)
       } else {
         console.error('Error al obtener la última ronda:', lastRondaResponse.message)
       }
@@ -103,21 +136,24 @@ const nuevaRonda = async () => {
   // Aquí podrías agregar lógica para reiniciar estados, repartir cartas, etc.
 }
 
+const onPlayerSelected = (player: { id: number, nombre: string }) => {
+  console.log('Jugador seleccionado:', player);
+};
+
 </script>
 
 <template>
     <Header 
-      :titulo="'Golpeado'" >
+      :titulo="gameName" >
       <template #boton_return>
         <button class="p-2 boton_retorno"><ArrowLeft/></button>
       </template>
       <template #botones>
         <button class="boton_header"> <Music class="w-5 m-3" /></button>
-        <button class="flex p-2 gap-2 boton_header">Play</button>
       </template>
     </Header>
     <!-- Sección de estadísticas superior -->
-    <div class="rounded-2xl p-6 bg-gradient-to-r from-red-500 to-red-600 shadow-lg mb-6">
+    <div v-if="racha" class="rounded-2xl p-6 bg-gradient-to-r from-red-500 to-red-600 shadow-lg mb-6">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
                 <svg class="w-10 h-10 text-yellow-300" fill="currentColor" viewBox="0 0 24 24">
@@ -136,57 +172,8 @@ const nuevaRonda = async () => {
 
     <!-- Versión compacta con 2 cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <!-- Card 1: Info de partida -->
-        <div class="bg-white rounded-xl p-4 shadow-sm">
-            <div class="flex items-center gap-3 mb-3">
-                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                    <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                </div>
-                <h4 class="font-semibold text-gray-800">Estado de Partida</h4>
-            </div>
-            <div class="space-y-2">
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Ronda:</span>
-                    <span class="font-medium">{{cantRonda}}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Jugadores:</span>
-                    <span class="font-medium">2 activos</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Tiempo:</span>
-                    <span class="font-medium">15 minutos</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Card 2: Líder actual -->
-        <div class="bg-white rounded-xl p-4 shadow-sm">
-            <div class="flex items-center gap-3 mb-3">
-                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                    <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732L14.146 12.8l-1.179 4.456a1 1 0 01-1.934 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732L9.854 7.2l1.179-4.456A1 1 0 0112 2z" clip-rule="evenodd"></path>
-                    </svg>
-                </div>
-                <h4 class="font-semibold text-gray-800">Líder Actual</h4>
-            </div>
-            <div class="space-y-2">
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Nombre:</span>
-                    <span class="font-medium">Pedro Pablo</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Puntaje:</span>
-                    <span class="font-medium text-green-600">+51</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Victorias:</span>
-                    <span class="font-medium">6 (55%)</span>
-                </div>
-            </div>
-        </div>
+      <CardEstadist title="Estado de Partida" :icon="Sparkles" colorScheme="green" :items="gameStateItems"/>
+      <CardEstadist title="Líder Actual" :icon="Guitar" colorScheme="blue" :items="leaderItems"/>
     </div>
 
     <!-- Contenido principal -->
@@ -204,12 +191,8 @@ const nuevaRonda = async () => {
             </div>
             <!-- #B3F5B9 -->
             <div class="m-auto">
-              <div class="flex flex-wrap gap-2 justify-center md:justify-start player-list">
-                <CardJugador
-                  v-for="jugador in jugadores"
-                  :key="jugador.id"
-                  :player="jugador"
-                />
+              <div class="flex flex-wrap gap-2 md:gap-5 justify-center player-list">
+                <CardJugador v-for="jugador in jugadores" :key="jugador.id" :player="jugador" @playerSelected="onPlayerSelected"/>
               </div>
             </div>
           </div>

@@ -317,6 +317,7 @@ class GameController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Última ronda obtenida exitosamente',
+                'game'=>$game,
                 'data' => $lastRonda,
                 'nro_ronda' => $game->rondas()->count()
             ]);

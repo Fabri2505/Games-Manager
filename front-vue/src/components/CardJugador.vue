@@ -1,5 +1,5 @@
 <template>
-  <div class="player-card">
+  <div class="player-card" @click="seleccionarJugador">
     <div class="avatar">
       {{ iniciales }}
     </div>
@@ -21,6 +21,10 @@ interface Props {
 
 const props = defineProps<Props>();
 
+const emit = defineEmits<{
+  playerSelected: [player: { id: number, nombre: string }]
+}>();
+
 const iniciales = computed(()=>{
   if(!props.player.nombre) return '';
 
@@ -31,6 +35,10 @@ const iniciales = computed(()=>{
   
   return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase()
 });
+
+const seleccionarJugador = () => {
+  emit('playerSelected', { id: props.player.id, nombre: props.player.nombre });
+};
 
 </script>
 
