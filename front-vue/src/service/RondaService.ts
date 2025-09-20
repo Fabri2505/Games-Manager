@@ -1,4 +1,4 @@
-import type { RondaApiResponse, RondaCreateRequest, RondaData } from "@/utils/schema";
+import type { RondaApiResponse, RondaCreateRequest, RondaData, SetWinnerResponse } from "@/utils/schema_ronda";
 
 export class RondaService{
     private baseUrl = "http://localhost:8000/api/rondas";
@@ -44,6 +44,38 @@ export class RondaService{
             throw new Error('Error desconocido al crear la ronda');
         }
 
+    }
+
+    /**
+     * Para settear al ganador de la ronda
+     */
+    async setWinner(rondaId: number, ganadorId: number, user_id:number): Promise<SetWinnerResponse> {
+        try {
+            const response = await fetch(`${this.baseUrl}/${rondaId}/set-winner`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ user_id: user_id, win: ganadorId })
+            })
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
+            }
+            const apiResponse: SetWinnerResponse = await response.json();
+            if (!apiResponse.success) {
+                throw new Error(apiResponse.message || 'Error al setear el ganador');
+            }
+            return apiResponse;
+            
+        }catch (error) {
+            if (error instanceof ValidationError || error instanceof Error) {
+                throw error;
+            }
+            throw new Error('Error desconocido al setear el ganador');
+        }
     }
 
     /**

@@ -2,22 +2,30 @@
 import CardJugador from '@/components/CardJugador.vue';
 import Header from '@/components/HeaderComponent.vue';
 import CardEstadist from '@/components/GolpeadoPage/CardEstadist.vue';
-import type { Participante, Player } from '@/utils/schema';
+import type { Player , Participante, User } from '@/utils/schema_participante';
 import { ArrowLeft, ChartColumnBig, Clock, Guitar, Music, Sparkles } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { gameService } from '@/service/GameService';
 import { rondaService, ValidationError } from '@/service/RondaService';
 
+interface GolpeadoPageState {
+  rondaId: number|null;
+  gameId: number|null;
+}
+
 const jugadores = ref<Player[]>([]);
 const idJugadorSeleccionado = ref<number | null>(null);
 const route = useRoute();
 const cantRonda = ref<number>(0); // Número de ronda actual
+const golpeadoState = ref<GolpeadoPageState>({
+  rondaId: null,
+  gameId: null
+});
 
 // Datos adicionales que podrías recibir
 const gameName = ref<string>('')
 const racha = ref<boolean>(true) // Racha del jugador principal
-let idGame = 0;
 
 const gameStateItems = computed(() => [
   {
@@ -56,15 +64,14 @@ onMounted(async () => {
   try {
 
     // idGame desde params
-    idGame = Number(route.params.idGame);
+    golpeadoState.value.gameId = Number(route.params.idGame);
 
     // Fallback si no hay datos
-    const lastRondaResponse = await gameService.getLastRonda(idGame);
+    const lastRondaResponse = await gameService.getLastRonda(golpeadoState.value.gameId);
 
     console.log('Respuesta de la última ronda:', lastRondaResponse)
 
     gameName.value = lastRondaResponse.game.name;
-    idGame = lastRondaResponse.game.id;
 
     if (lastRondaResponse.success) {
       // rondaData.value = lastRondaResponse.data
@@ -77,11 +84,11 @@ onMounted(async () => {
     console.warn('No se recibieron jugadores')
 
     const participaciones = lastRondaResponse.data.participantes;
-    jugadores.value = participaciones.map((p: Participante) => {
+    jugadores.value = participaciones.map((p: Participante<User>) => {
       return {
         id: p.user.id,
-        email: p.user.email,
-        nombre: `${p.user.name} ${p.user.ape}`
+        name: `${p.user.name} ${p.user.ape}`,
+        email: p.user.email
         // Otros campos que puedas necesitar
       } as Player
     })
@@ -95,7 +102,7 @@ onMounted(async () => {
     //   { id: 996, email: 'dsd' , nombre: 'Jugador Ficticio 4', selected: true }
     // ]
 
-    const analityData = await gameService.getAnalitycs(idGame);
+    const analityData = await gameService.getAnalitycs(golpeadoState.value.gameId);
 
     console.log('Datos analíticos de la ronda:', analityData)
     
@@ -109,15 +116,22 @@ const marcarGanador = computed(() => {
   return idJugadorSeleccionado.value !== null;
 });
 
+const setWinner = async () => {
+  const rondaId = golpeadoState.value.rondaId; // Aquí deberías obtener el ID real de la ronda actual
+  const gameId = golpeadoState.value.gameId; // Aquí deberías obtener el ID real del juego
+  const responseWinner = await rondaService.setWinner(rondaId??0, idJugadorSeleccionado.value!, gameId??0);
+  console.log('Respuesta al setear ganador:', responseWinner);
+}
+
 const nuevaRonda = async () => {
   // Lógica para iniciar una nueva ronda
   try{
     console.log('Iniciando nueva ronda...');
-    console.log('ID del juego:', idGame);
+    console.log('ID del juego:', golpeadoState.value.gameId);
     console.log('Jugadores participantes:', jugadores.value.map(j=>j.id));
 
     const rondaCreate = await rondaService.createRonda({
-      game_id:idGame,
+      game_id:golpeadoState.value.gameId??0,
       participantes:jugadores.value.map(j=>j.id)
     });
 

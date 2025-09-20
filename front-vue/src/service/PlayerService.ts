@@ -1,4 +1,4 @@
-import type { Player, PlayerResponse } from "@/utils/schema";
+import type { Player, PlayerResponse } from "@/utils/schema_participante";
 
 export class PlayerService{
     private baseUrl = "http://localhost:8000/api/players";
@@ -23,7 +23,7 @@ export class PlayerService{
             return players.map((player: PlayerResponse) => ({
                 id: player.id,
                 email: player.email,
-                nombre: `${player.name} ${player.ape}`
+                name: `${player.name} ${player.ape}`
             }));
         }catch(error){
             console.error("Error fetching players:", error);

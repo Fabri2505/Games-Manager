@@ -8,14 +8,14 @@
       </div>
     </div>
     <div class="player-info">
-      <h3 class="player-name">{{ player.nombre }}</h3>
+      <h3 class="player-name">{{ player.name }}</h3>
       <p class="player-email line-clamp-1">{{ player.email }}</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Player } from '@/utils/schema';
+import type { Player } from '@/utils/schema_participante';
 import { computed } from 'vue';
 
 
@@ -30,9 +30,9 @@ const emit = defineEmits<{
 }>();
 
 const iniciales = computed(()=>{
-  if(!props.player.nombre) return '';
+  if(!props.player.name) return '';
 
-  const words = props.player.nombre.trim().split(' ');
+  const words = props.player.name.trim().split(' ');
   if (words.length === 1) {
     return words[0].charAt(0).toUpperCase();
   }
@@ -41,7 +41,7 @@ const iniciales = computed(()=>{
 });
 
 const seleccionarJugador = () => {
-  emit('playerSelected', { id: props.player.id, nombre: props.player.nombre });
+  emit('playerSelected', { id: props.player.id, nombre: props.player.name });
 };
 
 </script>

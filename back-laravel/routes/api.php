@@ -26,8 +26,8 @@ Route::post('/login', [UserController::class, 'login']);
     Route::put('game/paused', [GameController::class,'paused'])->name('game.paused');
 
     Route::post('rondas', [RondaController::class,'store'])->name('ronda.store');
-    Route::put('ronda/{rondaId}/set-winner', [RondaController::class,'setWinner'])->name('ronda.setWinner');
-    Route::post('ronda/{rondaId}/add-players', [RondaController::class,'addPlayers'])->name('ronda.addPlayers');
-    Route::delete('ronda/{rondaId}/remove-player', [RondaController::class,'removePlayer'])->name('ronda.removePlayer');
+    Route::put('rondas/{rondaId}/set-winner', [RondaController::class,'setWinner'])->name('ronda.setWinner');
+    Route::post('rondas/{rondaId}/add-players', [RondaController::class,'addPlayers'])->name('ronda.addPlayers');
+    Route::delete('rondas/{rondaId}/remove-player', [RondaController::class,'removePlayer'])->name('ronda.removePlayer');
 // });
 
