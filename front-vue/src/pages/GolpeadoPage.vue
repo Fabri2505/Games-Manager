@@ -2,6 +2,7 @@
 import CardJugador from '@/components/CardJugador.vue';
 import Header from '@/components/HeaderComponent.vue';
 import CardEstadist from '@/components/GolpeadoPage/CardEstadist.vue';
+import StatsCard from '../components/GolpeadoPage/DistribucionCard.vue';
 import type { Player , Participante, User } from '@/utils/schema_participante';
 import { ArrowLeft, ChartColumnBig, Clock, Guitar, Music, Sparkles } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
@@ -184,6 +185,20 @@ const onPlayerSelected = (player: { id: number, nombre: string }) => {
 
 };
 
+// Datos de ejemplo para victorias
+const victoryStats = ref([
+  { id: 1, name: 'PP', value: 6, percentage: 55 },
+  { id: 2, name: 'JM', value: 5, percentage: 20 },
+  { id: 3, name: 'AL', value: 3, percentage: 25 }
+])
+
+// Datos de ejemplo para balance
+const balanceStats = ref([
+  { id: 1, name: 'PP', value: 51 },
+  { id: 2, name: 'JM', value: -51 },
+  { id: 3, name: 'AL', value: 0 }
+])
+
 </script>
 
 <template>
@@ -245,56 +260,23 @@ const onPlayerSelected = (player: { id: number, nombre: string }) => {
         </div>
         
         <div class="space-y-4">
-            <div  class="rounded-lg bg-white shadow-sm border-0 p-6">
-              <div class="flex items-center gap-2 mb-4">
-                <ChartColumnBig class="w-5 h-5 text-blue-500" />
-                <h3 class="text-lg font-semibold">Distribución de Victorias</h3>
-              </div>
-              
-              <div class="space-y-3">
-                  <div class="flex items-center justify-between">
-                    <span class="text-sm font-medium">PP</span>
-                    <div class="flex items-center gap-2 flex-1 mx-3">
-                      <div class="flex-1 bg-gray-200 rounded-full h-2">
-                        <div class="bg-blue-500 h-2 rounded-full" style="width: 55%"></div>
-                      </div>
-                      <span class="text-sm font-medium">6</span>
-                      <span class="text-xs text-gray-500">55%</span>
-                    </div>
-                  </div>
-                  
-                  <div class="flex items-center justify-between">
-                    <span class="text-sm font-medium">JM</span>
-                    <div class="flex items-center gap-2 flex-1 mx-3">
-                      <div class="flex-1 bg-gray-200 rounded-full h-2">
-                        <div class="bg-pink-500 h-2 rounded-full" style="width: 20%"></div>
-                      </div>
-                      <span class="text-sm font-medium">5</span>
-                      <span class="text-xs text-gray-500">20%</span>
-                    </div>
-                  </div>
-              </div>
-          </div>
+            <!-- Distribución de Victorias -->
+            <StatsCard
+              title="Distribución de Victorias"
+              :icon="ChartColumnBig"
+              icon-color="text-blue-500"
+              type="victories"
+              :players="victoryStats"
+            />
 
-          <!-- Balance Juego Actual -->
-          <div class="rounded-lg bg-white shadow-sm border-0 p-6">
-              <div class="flex items-center gap-2 mb-4">
-                <Clock class="w-5 h-5 text-amber-500"/>
-                <h3 class="text-lg font-semibold">Balance Juego Actual</h3>
-              </div>
-              
-              <div class="space-y-3">
-                  <div class="flex items-center justify-between">
-                    <span class="text-sm font-medium">PP</span>
-                    <span class="text-sm font-semibold text-green-600">+51</span>
-                  </div>
-                  
-                  <div class="flex items-center justify-between">
-                    <span class="text-sm font-medium">JM</span>
-                    <span class="text-sm font-semibold text-red-600">-51</span>
-                  </div>
-              </div>
-          </div>
+            <!-- Balance Juego Actual -->
+            <StatsCard
+              title="Balance Juego Actual"
+              :icon="Clock"
+              icon-color="text-amber-500"
+              type="balance"
+              :players="balanceStats"
+            />
         </div>
     </div>
 </template>
