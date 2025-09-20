@@ -73,15 +73,6 @@ const createNewGameorAsignToSerie = async() => {
       name:'Golpeado',
       params:{
         idGame: gameResponse.id_juego
-      },
-      query:{
-        serieName: serieName.value,
-        gameName: gameName.value
-      },
-      state: {
-        players: JSON.stringify(selectedPlayers.value),        // Lista de jugadores
-        gameData: JSON.stringify(gameResponse),               // Datos del juego creado
-        rondaData: JSON.stringify(rondaResponse)             // Datos de la ronda
       }
     });
 

@@ -7,14 +7,17 @@ import { ArrowLeft, ChartColumnBig, Clock, Guitar, Music, Sparkles } from 'lucid
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { gameService } from '@/service/GameService';
+import { rondaService, ValidationError } from '@/service/RondaService';
 
 const jugadores = ref<Player[]>([]);
+const idJugadorSeleccionado = ref<number | null>(null);
 const route = useRoute();
 const cantRonda = ref<number>(0); // Número de ronda actual
 
 // Datos adicionales que podrías recibir
 const gameName = ref<string>('')
 const racha = ref<boolean>(true) // Racha del jugador principal
+let idGame = 0;
 
 const gameStateItems = computed(() => [
   {
@@ -53,76 +56,48 @@ onMounted(async () => {
   try {
 
     // idGame desde params
-    const idGame = Number(route.params.idGame);
-    // Parsear datos del state
-    const playersJson = history.state?.players as string
-    const gameDataJson = history.state?.gameData as string  
-    const rondaDataJson = history.state?.rondaData as string
-    
-    // Obtener query params
-    gameName.value = route.query.gameName as string || ''
-    
-    // Parsear players
-    if (playersJson) {
-      jugadores.value = JSON.parse(playersJson) as Player[]
-      console.log('Jugadores recibidos:', jugadores.value)
-    }
-    
-    // // Parsear gameData  
-    // if (gameDataJson) {
-    //   gameData.value = JSON.parse(gameDataJson)
-    //   console.log('Datos del juego:', gameData.value)
-    // }
-    
-    // // Parsear rondaData
-    // if (rondaDataJson) {
-    //   rondaData.value = JSON.parse(rondaDataJson)  
-    //   console.log('Datos de la ronda:', rondaData.value)
-    // }
-    
+    idGame = Number(route.params.idGame);
+
     // Fallback si no hay datos
-    if (!jugadores.value.length) {
+    const lastRondaResponse = await gameService.getLastRonda(idGame);
 
-      const lastRondaResponse = await gameService.getLastRonda(idGame);
+    console.log('Respuesta de la última ronda:', lastRondaResponse)
 
-      console.log('Respuesta de la última ronda:', lastRondaResponse)
+    gameName.value = lastRondaResponse.game.name;
+    idGame = lastRondaResponse.game.id;
 
-      gameName.value = lastRondaResponse.game.name;
-
-      if (lastRondaResponse.success) {
-        // rondaData.value = lastRondaResponse.data
-        cantRonda.value = lastRondaResponse.nro_ronda || 1
-        // console.log('Última ronda obtenida del servidor:', rondaData.value)
-      } else {
-        console.error('Error al obtener la última ronda:', lastRondaResponse.message)
-      }
-
-      console.warn('No se recibieron jugadores')
-
-      const participaciones = lastRondaResponse.data.participantes;
-      jugadores.value = participaciones.map((p: Participante) => {
-        return {
-          id: p.user.id,
-          email: p.user.email,
-          nombre: `${p.user.name} ${p.user.ape}`
-          // Otros campos que puedas necesitar
-        } as Player
-      })
-
-      jugadores.value = [
-        ...jugadores.value,
-        // Agregar jugadores ficticios si es necesario
-        { id: 999, email: 'dsd' , nombre: 'Jugador Ficticio' } ,
-        { id: 998, email: 'dsd' , nombre: 'Jugador Ficticio 2' },
-        { id: 997, email: 'dsd' , nombre: 'Jugador Ficticio 3' } ,
-        { id: 996, email: 'dsd' , nombre: 'Jugador Ficticio 4' }
-      ]
-
-      const analityData = await gameService.getAnalitycs(idGame);
-
-      console.log('Datos analíticos de la ronda:', analityData)
-      
+    if (lastRondaResponse.success) {
+      // rondaData.value = lastRondaResponse.data
+      cantRonda.value = lastRondaResponse.nro_ronda || 0
+      // console.log('Última ronda obtenida del servidor:', rondaData.value)
+    } else {
+      console.error('Error al obtener la última ronda:', lastRondaResponse.message)
     }
+
+    console.warn('No se recibieron jugadores')
+
+    const participaciones = lastRondaResponse.data.participantes;
+    jugadores.value = participaciones.map((p: Participante) => {
+      return {
+        id: p.user.id,
+        email: p.user.email,
+        nombre: `${p.user.name} ${p.user.ape}`
+        // Otros campos que puedas necesitar
+      } as Player
+    })
+
+    // jugadores.value = [
+    //   ...jugadores.value,
+    //   // Agregar jugadores ficticios si es necesario
+    //   { id: 999, email: 'dsd' , nombre: 'Jugador Ficticio' } ,
+    //   { id: 998, email: 'dsd' , nombre: 'Jugador Ficticio 2' },
+    //   { id: 997, email: 'dsd' , nombre: 'Jugador Ficticio 3' } ,
+    //   { id: 996, email: 'dsd' , nombre: 'Jugador Ficticio 4', selected: true }
+    // ]
+
+    const analityData = await gameService.getAnalitycs(idGame);
+
+    console.log('Datos analíticos de la ronda:', analityData)
     
   } catch (error) {
     console.error('Error al parsear datos:', error)
@@ -130,14 +105,69 @@ onMounted(async () => {
   
 })
 
+const marcarGanador = computed(() => {
+  return idJugadorSeleccionado.value !== null;
+});
+
 const nuevaRonda = async () => {
   // Lógica para iniciar una nueva ronda
-  cantRonda.value += 1;
+  try{
+    console.log('Iniciando nueva ronda...');
+    console.log('ID del juego:', idGame);
+    console.log('Jugadores participantes:', jugadores.value.map(j=>j.id));
+
+    const rondaCreate = await rondaService.createRonda({
+      game_id:idGame,
+      participantes:jugadores.value.map(j=>j.id)
+    });
+
+    cantRonda.value += 1;
+  } catch (error) {
+
+    console.log('Error al crear la ronda:', error);
+    // Manejo específico para errores de validación
+    if (error instanceof ValidationError) {
+      console.error('❌ Errores de validación detectados:');
+      
+      // Resumen de errores
+      console.error(`📋 Resumen: ${error.getErrorSummary()}`);
+      
+      // Aquí podrías mostrar una notificación al usuario
+      // Por ejemplo: mostrarNotificacion('error', error.getErrorSummary());
+      
+    } else if (error instanceof Error) {
+      // Otros tipos de errores
+      console.error('❌ Error al crear la ronda:', error.message);
+      
+      // Aquí podrías mostrar una notificación genérica
+      // Por ejemplo: mostrarNotificacion('error', 'Error inesperado al crear la ronda');
+      
+    } else {
+      // Error completamente inesperado
+      console.error('❌ Error inesperado:', error);
+    }
+  }
   // Aquí podrías agregar lógica para reiniciar estados, repartir cartas, etc.
 }
 
 const onPlayerSelected = (player: { id: number, nombre: string }) => {
   console.log('Jugador seleccionado:', player);
+
+  let jugadorYaSeleccionado:boolean = false;
+  jugadores.value.forEach(j => {
+    if (j.id === player.id) {
+      j.selected = !j.selected;
+      jugadorYaSeleccionado = j.selected; // Guardamos el estado final
+    } else {
+      j.selected = false;
+    }
+  });
+  // Actualizamos idJugadorSeleccionado basado en si hay algún jugador seleccionado
+  idJugadorSeleccionado.value = jugadorYaSeleccionado ? player.id : null;
+
+  console.log('Estado actualizado de jugadores:', jugadores.value);
+  console.log('ID del jugador seleccionado:', idJugadorSeleccionado.value);
+
 };
 
 </script>
@@ -184,6 +214,8 @@ const onPlayerSelected = (player: { id: number, nombre: string }) => {
             <div class="flex justify-between p-5">
               <h1 class="text-3xl text-center md:text-left font-bold">Mesa de Juego</h1>
               <div class="flex gap-2 items-center">
+                <button v-if="marcarGanador" class="bg-black text-white p-2 rounded-md"
+                  @click="nuevaRonda">Marcar Winner</button>
                 <button class="bg-black text-white p-2 rounded-md"
                   @click="nuevaRonda">Nueva Ronda</button>
               </div>
@@ -207,25 +239,25 @@ const onPlayerSelected = (player: { id: number, nombre: string }) => {
               
               <div class="space-y-3">
                   <div class="flex items-center justify-between">
-                      <span class="text-sm font-medium">PP</span>
-                      <div class="flex items-center gap-2 flex-1 mx-3">
-                          <div class="flex-1 bg-gray-200 rounded-full h-2">
-                              <div class="bg-blue-500 h-2 rounded-full" style="width: 55%"></div>
-                          </div>
-                          <span class="text-sm font-medium">6</span>
-                          <span class="text-xs text-gray-500">55%</span>
+                    <span class="text-sm font-medium">PP</span>
+                    <div class="flex items-center gap-2 flex-1 mx-3">
+                      <div class="flex-1 bg-gray-200 rounded-full h-2">
+                        <div class="bg-blue-500 h-2 rounded-full" style="width: 55%"></div>
                       </div>
+                      <span class="text-sm font-medium">6</span>
+                      <span class="text-xs text-gray-500">55%</span>
+                    </div>
                   </div>
                   
                   <div class="flex items-center justify-between">
-                      <span class="text-sm font-medium">JM</span>
-                      <div class="flex items-center gap-2 flex-1 mx-3">
-                          <div class="flex-1 bg-gray-200 rounded-full h-2">
-                              <div class="bg-pink-500 h-2 rounded-full" style="width: 20%"></div>
-                          </div>
-                          <span class="text-sm font-medium">5</span>
-                          <span class="text-xs text-gray-500">20%</span>
+                    <span class="text-sm font-medium">JM</span>
+                    <div class="flex items-center gap-2 flex-1 mx-3">
+                      <div class="flex-1 bg-gray-200 rounded-full h-2">
+                        <div class="bg-pink-500 h-2 rounded-full" style="width: 20%"></div>
                       </div>
+                      <span class="text-sm font-medium">5</span>
+                      <span class="text-xs text-gray-500">20%</span>
+                    </div>
                   </div>
               </div>
           </div>
@@ -239,13 +271,13 @@ const onPlayerSelected = (player: { id: number, nombre: string }) => {
               
               <div class="space-y-3">
                   <div class="flex items-center justify-between">
-                      <span class="text-sm font-medium">PP</span>
-                      <span class="text-sm font-semibold text-green-600">+51</span>
+                    <span class="text-sm font-medium">PP</span>
+                    <span class="text-sm font-semibold text-green-600">+51</span>
                   </div>
                   
                   <div class="flex items-center justify-between">
-                      <span class="text-sm font-medium">JM</span>
-                      <span class="text-sm font-semibold text-red-600">-51</span>
+                    <span class="text-sm font-medium">JM</span>
+                    <span class="text-sm font-semibold text-red-600">-51</span>
                   </div>
               </div>
           </div>

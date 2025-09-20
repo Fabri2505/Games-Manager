@@ -5,55 +5,16 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Participante;
 use App\Models\Ronda;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class RondaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
+    
     /**
      * Store a newly created resource in storage.
-     */
-    /**
-     * @OA\Post(
-     *     path="/api/rondas",
-     *     tags={"Rondas"},
-     *     summary="Crear una nueva ronda",
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"game_id","participantes"},
-     *             @OA\Property(property="game_id", type="integer", example=1),
-     *             @OA\Property(
-     *                 property="participantes",
-     *                 type="array",
-     *                 @OA\Items(type="integer"),
-     *                 example={1, 2, 3, 4}
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Ronda creada exitosamente",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Ronda iniciada exitosamente"),
-     *             @OA\Property(property="data", ref="#/components/schemas/Ronda")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Error de validación"
-     *     )
-     * )
      */
     public function store(Request $request)
     {
@@ -78,6 +39,9 @@ class RondaController extends Controller
             Log::info('Ronda creada');
             Log::info('Ronda creada con ID:', ['id' => $ronda->id]);
 
+            Log::info('Usuarios recibidos:', $request->input('participantes'));
+            $existingUsers = User::whereIn('id', $request->input('participantes'))->pluck('id')->toArray();
+            Log::info('Usuarios que existen:', $existingUsers);
             
             $participantes = collect($validated['participantes'])->map(function ($userId) use ($ronda) {
                 return [
@@ -94,7 +58,7 @@ class RondaController extends Controller
             Participante::insert($participantes->toArray());
 
             DB::commit();
-            
+            Log::info('A punto de retornar respuesta de éxito');
             return response()->json([
                 'success' => true,
                 'message' => 'Ronda iniciada exitosamente',
@@ -122,57 +86,6 @@ class RondaController extends Controller
         }
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/rondas/{ronda}/add-players",
-     *     tags={"Rondas"},
-     *     summary="Agregar participantes a una ronda",
-     *     @OA\Parameter(
-     *         name="ronda",
-     *         in="path",
-     *         required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"user_ids"},
-     *             @OA\Property(
-     *                 property="user_ids",
-     *                 type="array",
-     *                 @OA\Items(type="integer"),
-     *                 example={5, 7, 9}
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Participantes agregados exitosamente",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="3 participante(s) agregado(s) exitosamente"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="object",
-     *                 @OA\Property(
-     *                     property="participantes_agregados",
-     *                     type="array",
-     *                     @OA\Items(ref="#/components/schemas/Participante")
-     *                 ),
-     *                 @OA\Property(
-     *                     property="usuarios_duplicados",
-     *                     type="array",
-     *                     @OA\Items(type="integer")
-     *                 )
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Error de validación o ronda finalizada"
-     *     )
-     * )
-     */
     public function addPlayers(Request $request, $rondaId)
     {
         $validated = $request->validate([
@@ -249,42 +162,6 @@ class RondaController extends Controller
         }
     }
 
-    /**
-     * @OA\Delete(
-     *     path="/api/rondas/{ronda}/remove-player",
-     *     tags={"Rondas"},
-     *     summary="Remover un participante de la ronda",
-     *     @OA\Parameter(
-     *         name="ronda",
-     *         in="path",
-     *         required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"user_id"},
-     *             @OA\Property(property="user_id", type="integer", example=7)
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Participante removido exitosamente",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Participante Juan Pérez removido exitosamente")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Participante no encontrado"
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="No se puede remover al ganador o ronda finalizada"
-     *     )
-     * )
-     */
     public function removePlayer(Request $request, $rondaId)
     {
         $validated = $request->validate([
@@ -345,45 +222,6 @@ class RondaController extends Controller
         }
     }
 
-    /**
-     * @OA\Patch(
-     *     path="/api/rondas/{ronda}/set-winner",
-     *     tags={"Rondas"},
-     *     summary="Establecer o quitar ganador de la ronda",
-     *     @OA\Parameter(
-     *         name="ronda",
-     *         in="path",
-     *         required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"user_id","win"},
-     *             @OA\Property(property="user_id", type="integer", example=5),
-     *             @OA\Property(property="win", type="boolean", example=true)
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Ganador establecido exitosamente",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Ganador establecido exitosamente"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="object",
-     *                 @OA\Property(property="participante", ref="#/components/schemas/Participante"),
-     *                 @OA\Property(property="ronda_finalizada", type="boolean", example=true)
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Participante no encontrado"
-     *     )
-     * )
-     */
     public function setWinner(Request $request, $rondaId)
     {
         $validated = $request->validate([

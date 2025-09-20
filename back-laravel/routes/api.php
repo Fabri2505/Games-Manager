@@ -11,8 +11,10 @@ Route::post('/login', [UserController::class, 'login']);
 
 // Route::middleware('auth:sanctum')->group(function(){
     Route::get('players', [UserController::class,'index'])->name('players.index');
-    Route::get('series', [SerieController::class,'index'])->name('series.index');
     Route::post('user', [UserController::class,'store'])->name('user.create');
+
+    Route::get('series', [SerieController::class,'index'])->name('series.index');
+    Route::post('series/asign-game', [SerieController::class,'asignGame'])->name('series.asignGame');
     
     Route::get('game', [GameController::class,'index'])->name('game.index');
     Route::get('game/{idGame}', [GameController::class,'getGame'])->name('game.getGame');

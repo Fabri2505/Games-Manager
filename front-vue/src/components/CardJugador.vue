@@ -1,7 +1,11 @@
 <template>
-  <div class="player-card" @click="seleccionarJugador">
+  <div 
+    class="player-card" :class="{ 'selected': player.selected }" @click="seleccionarJugador">
     <div class="avatar">
       {{ iniciales }}
+      <div v-if="player.selected" class="selected-icon">
+        ✓
+      </div>
     </div>
     <div class="player-info">
       <h3 class="player-name">{{ player.nombre }}</h3>
@@ -62,6 +66,13 @@ const seleccionarJugador = () => {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
+/* Estilos para el estado seleccionado */
+.player-card.selected {
+  border: 2px solid #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  background-color: #f8faff;
+}
+
 .avatar {
   width: 60px;
   height: 60px;
@@ -75,6 +86,29 @@ const seleccionarJugador = () => {
   font-size: 24px;
   margin-bottom: 16px;
   flex-shrink: 0;
+}
+
+/* Avatar cuando está seleccionado */
+.selected .avatar {
+  border: 3px solid #3b82f6;
+  transform: scale(1.05);
+}
+
+.selected-icon {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 20px;
+  height: 20px;
+  background-color: #10b981;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+  border: 2px solid white;
 }
 
 .player-info {
@@ -96,6 +130,11 @@ const seleccionarJugador = () => {
   -line-clamp: 2;
   -webkit-box-orient: vertical;
   line-height: 1.4;
+}
+
+/* Texto cuando está seleccionado */
+.selected .player-name {
+  color: #3b82f6;
 }
 
 .player-email {

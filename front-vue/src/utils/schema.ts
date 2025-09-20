@@ -1,7 +1,8 @@
 export interface Player{
     id:number,
     email:string,
-    nombre:string
+    nombre:string,
+    selected?: boolean
 }
 
 export interface PlayerResponse{
