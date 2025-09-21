@@ -4,7 +4,8 @@ import BotonSwitch from '@/components/HomeGolpeadoP/BotonSwitch.vue';
 import { ArrowLeft, Play, Plus, X, Users, Gamepad2, Search } from 'lucide-vue-next';
 import { ref, computed, onMounted, watch, nextTick, onUnmounted } from 'vue';
 import { usePlayerStore } from '../stores/player';
-import type { Player, Serie } from '@/utils/schema';
+import type {Serie} from '@/utils/schema_serie';
+import type { Player } from '@/utils/schema_participante';
 import {serieService} from '@/service/SerieService';
 import { gameService } from '@/service/GameService';
 import { rondaService } from '@/service/RondaService';
@@ -156,7 +157,7 @@ const addPlayerFromSearch = () => {
 
   // Buscar si el jugador ya existe exactamente
   const existingPlayer = playerStore.players.find(player => 
-    player.nombre.toLowerCase() === trimmedName.toLowerCase()
+    player.name.toLowerCase() === trimmedName.toLowerCase()
   );
 
   if (existingPlayer) {
@@ -250,7 +251,7 @@ const refreshPlayers = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen">
+  <div class="min-h-screen m-5">
     <!-- 🎯 Header del componente -->
     <Header 
       :titulo="'Configurar Juego'"
@@ -437,12 +438,12 @@ const refreshPlayers = async () => {
                     <!-- Avatar con inicial -->
                     <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                       <span class="text-blue-600 font-medium text-sm">
-                        {{ player.nombre.charAt(0).toUpperCase() }}
+                        {{ player.name.charAt(0).toUpperCase() }}
                       </span>
                     </div>
                     <div class="flex-1 min-w-0">
                       <p class="text-sm font-medium text-gray-900 truncate">
-                        {{ player.nombre }}
+                        {{ player.name }}
                       </p>
                       <p v-if="player.email" class="text-xs text-gray-500 truncate">
                         {{ player.email }}
@@ -489,10 +490,10 @@ const refreshPlayers = async () => {
                   <div class="flex items-center gap-2">
                     <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                       <span class="text-blue-600 font-medium text-xs">
-                        {{ player.nombre.charAt(0).toUpperCase() }}
+                        {{ player.name.charAt(0).toUpperCase() }}
                       </span>
                     </div>
-                    <span class="text-gray-900 font-medium">{{ player.nombre }}</span>
+                    <span class="text-gray-900 font-medium">{{ player.name }}</span>
                   </div>
                   <button 
                     type="button"

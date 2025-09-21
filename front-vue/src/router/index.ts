@@ -6,6 +6,7 @@ import Welcome from '@/pages/WelcomePage.vue'
 import HomeGames from '@/pages/HomeGames.vue'
 import HomeGolpeado from '@/pages/HomeGolpeado.vue'
 import GolpeadoPage from '@/pages/GolpeadoPage.vue'
+import NotFoundPage from '@/pages/NotFoundPage.vue'
 
 const routes:RouteRecordRaw[] = [
   {
@@ -59,6 +60,15 @@ const routes:RouteRecordRaw[] = [
     component: GolpeadoPage,
     meta: { 
       title: 'Golpeado | Mesa de juego',
+      requiresGuest: true 
+    }
+  },
+  {
+    path: '/not-found',
+    name: 'NotFound', 
+    component: NotFoundPage,
+    meta: { 
+      title: 'Pagina no encontrada',
       requiresGuest: true 
     }
   }

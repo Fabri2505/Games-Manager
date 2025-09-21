@@ -9,23 +9,23 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { gameService } from '@/service/GameService';
 import { rondaService, ValidationError } from '@/service/RondaService';
+import router from '@/router';
 
 interface GolpeadoPageState {
-  rondaId: number|null;
-  gameId: number|null;
+  rondaId: number;
+  gameId: number;
 }
 
+let gameName:string = '';
 const jugadores = ref<Player[]>([]);
 const idJugadorSeleccionado = ref<number | null>(null);
 const route = useRoute();
 const cantRonda = ref<number>(0); // Número de ronda actual
 const golpeadoState = ref<GolpeadoPageState>({
-  rondaId: null,
-  gameId: null
+  rondaId: 0,
+  gameId: 0
 });
 
-// Datos adicionales que podrías recibir
-const gameName = ref<string>('')
 const racha = ref<boolean>(true) // Racha del jugador principal
 
 const gameStateItems = computed(() => [
@@ -64,44 +64,29 @@ onMounted(async () => {
   // Obtener datos del state de la navegación
   try {
 
-    // idGame desde params
-    golpeadoState.value.gameId = Number(route.params.idGame);
-
     // Fallback si no hay datos
-    const lastRondaResponse = await gameService.getLastRonda(golpeadoState.value.gameId);
+    const lastRondaResponse = await gameService.getLastRonda(Number(route.params.idGame));
 
     console.log('Respuesta de la última ronda:', lastRondaResponse)
 
-    gameName.value = lastRondaResponse.game.name;
-
     if (lastRondaResponse.success) {
-      // rondaData.value = lastRondaResponse.data
-      cantRonda.value = lastRondaResponse.nro_ronda || 0
-      // console.log('Última ronda obtenida del servidor:', rondaData.value)
+      gameName = lastRondaResponse.game.name;
+      golpeadoState.value.gameId = lastRondaResponse.game.id;
+      golpeadoState.value.rondaId = lastRondaResponse.data.id;
+      cantRonda.value = lastRondaResponse.nro_ronda
+
+      jugadores.value = lastRondaResponse.data.participantes.map((p: Participante<User>) => {
+        return {
+          id: p.user.id,
+          name: `${p.user.name} ${p.user.ape}`,
+          email: p.user.email
+          // Otros campos que puedas necesitar
+        } as Player
+      });
+
     } else {
       console.error('Error al obtener la última ronda:', lastRondaResponse.message)
     }
-
-    console.warn('No se recibieron jugadores')
-
-    const participaciones = lastRondaResponse.data.participantes;
-    jugadores.value = participaciones.map((p: Participante<User>) => {
-      return {
-        id: p.user.id,
-        name: `${p.user.name} ${p.user.ape}`,
-        email: p.user.email
-        // Otros campos que puedas necesitar
-      } as Player
-    })
-
-    // jugadores.value = [
-    //   ...jugadores.value,
-    //   // Agregar jugadores ficticios si es necesario
-    //   { id: 999, email: 'dsd' , nombre: 'Jugador Ficticio' } ,
-    //   { id: 998, email: 'dsd' , nombre: 'Jugador Ficticio 2' },
-    //   { id: 997, email: 'dsd' , nombre: 'Jugador Ficticio 3' } ,
-    //   { id: 996, email: 'dsd' , nombre: 'Jugador Ficticio 4', selected: true }
-    // ]
 
     const analityData = await gameService.getAnalitycs(golpeadoState.value.gameId);
 
@@ -109,18 +94,15 @@ onMounted(async () => {
     
   } catch (error) {
     console.error('Error al parsear datos:', error)
+    router.push('/not-found');
   }
   
 })
 
-const marcarGanador = computed(() => {
-  return idJugadorSeleccionado.value !== null;
-});
-
 const setWinner = async () => {
   const rondaId = golpeadoState.value.rondaId; // Aquí deberías obtener el ID real de la ronda actual
   const gameId = golpeadoState.value.gameId; // Aquí deberías obtener el ID real del juego
-  const responseWinner = await rondaService.setWinner(rondaId??0, idJugadorSeleccionado.value!, gameId??0);
+  const responseWinner = await rondaService.setWinner(rondaId, idJugadorSeleccionado.value!, gameId);
   console.log('Respuesta al setear ganador:', responseWinner);
 }
 
@@ -135,6 +117,12 @@ const nuevaRonda = async () => {
       game_id:golpeadoState.value.gameId??0,
       participantes:jugadores.value.map(j=>j.id)
     });
+
+    // reasignamos la nueva ronda
+    golpeadoState.value.rondaId = rondaCreate.id;
+    console.log('Nueva ronda creada:', rondaCreate.id);
+    
+    jugadores.value.forEach(j => j.selected = false);
 
     cantRonda.value += 1;
   } catch (error) {
@@ -202,6 +190,7 @@ const balanceStats = ref([
 </script>
 
 <template>
+  <div v-if="golpeadoState.gameId" class="m-5">
     <Header 
       :titulo="gameName" >
       <template #boton_return>
@@ -243,8 +232,10 @@ const balanceStats = ref([
             <div class="flex justify-between p-5">
               <h1 class="text-3xl text-center md:text-left font-bold">Mesa de Juego</h1>
               <div class="flex gap-2 items-center">
-                <button v-if="marcarGanador" class="bg-black text-white p-2 rounded-md"
-                  @click="nuevaRonda">Marcar Winner</button>
+                <button v-if="idJugadorSeleccionado" class="bg-amber-400 text-white p-2 rounded-md"
+                  @click="setWinner">Marcar Winner</button>
+                <button v-else class="bg-amber-400 text-white p-2 rounded-md"
+                  @click="setWinner">Empate</button>
                 <button class="bg-black text-white p-2 rounded-md"
                   @click="nuevaRonda">Nueva Ronda</button>
               </div>
@@ -279,6 +270,8 @@ const balanceStats = ref([
             />
         </div>
     </div>
+  </div>
+    
 </template>
 
 <style scoped>

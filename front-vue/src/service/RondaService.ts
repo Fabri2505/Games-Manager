@@ -1,4 +1,4 @@
-import type { RondaApiResponse, RondaCreateRequest, RondaData, SetWinnerResponse } from "@/utils/schema_ronda";
+import type { RondaCreateRequest, RondaData, RondaResponse, SetWinnerResponse } from "@/utils/schema_ronda";
 
 export class RondaService{
     private baseUrl = "http://localhost:8000/api/rondas";
@@ -29,7 +29,7 @@ export class RondaService{
                 throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
             }
 
-            const apiResponse: RondaApiResponse = await response.json();
+            const apiResponse: RondaResponse = await response.json();
             
             if (!apiResponse.success) {
                 throw new Error(apiResponse.message || 'Error al crear la ronda');

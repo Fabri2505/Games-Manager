@@ -17,11 +17,14 @@ export interface RondaData {
     participantes: Participante<User>[];
 }
 
-export interface RondaApiResponse {
+export interface RondaResponse {
     success: boolean;
     message: string;
-    game: GameResponse;
     data: RondaData;
+}
+
+export interface RondaApiResponse extends RondaResponse {
+    game: GameResponse;
 }
 
 export interface  DataResponseWinner {

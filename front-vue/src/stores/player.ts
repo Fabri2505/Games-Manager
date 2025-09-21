@@ -1,4 +1,4 @@
-import type { Player } from "@/utils/schema"
+import type { Player } from "@/utils/schema_participante"
 import { defineStore } from "pinia"
 import { computed, ref } from "vue"
 import { playerService } from "../service/PlayerService"
@@ -46,7 +46,7 @@ export const usePlayerStore = defineStore('players', () =>{
       if (!searchTerm.trim()) return [];
       
       return players.value.filter(player => 
-        player.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+        player.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
   })

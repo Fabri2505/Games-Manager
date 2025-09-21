@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Game;
 use App\Models\Serie;
+use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -74,73 +76,6 @@ class GameController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    /**
-     * @OA\Post(
-     *     path="/api/game",
-     *     tags={"Games"},
-     *     summary="Crear un nuevo juego",
-     *     description="Crea un nuevo juego con descripción y monto. La fecha de juego se establece automáticamente.",
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"descrip","monto","user_id"},
-     *             @OA\Property(
-     *                 property="descrip",
-     *                 type="string",
-     *                 maxLength=255,
-     *                 description="Descripción del juego",
-     *                 example="Torneo de Ajedrez Mensual"
-     *             ),
-     *             @OA\Property(
-     *                 property="monto",
-     *                 type="number",
-     *                 format="float",
-     *                 minimum=0,
-     *                 description="Monto del juego",
-     *                 example=50.00
-     *             ),
-     *             @OA\Property(
-     *                 property="user_id",
-     *                 type="number",
-     *                 minimum=1,
-     *                 description="Id del jugador que crea",
-     *                 example=1
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Juego creado exitosamente",
-     *         @OA\JsonContent(
-     *             @OA\Property(
-     *                 property="game",
-     *                 ref="#/components/schemas/Game"
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Error de validación",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="The given data was invalid."),
-     *             @OA\Property(
-     *                 property="errors",
-     *                 type="object",
-     *                 @OA\Property(
-     *                     property="descrip",
-     *                     type="array",
-     *                     @OA\Items(type="string", example="The descrip field is required.")
-     *                 ),
-     *                 @OA\Property(
-     *                     property="monto",
-     *                     type="array",
-     *                     @OA\Items(type="string", example="The monto must be at least 0.")
-     *                 )
-     *             )
-     *         )
-     *     )
-     * )
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -209,62 +144,6 @@ class GameController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    /**
-     * @OA\Put(
-     *     path="/api/game/cierre",
-     *     tags={"Games"},
-     *     summary="Actualizar fecha de cierre del juego",
-     *     description="Establece la fecha de cierre de un juego. La fecha debe ser posterior al momento actual.",
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"fec_cierre"},
-     *             @OA\Property(
-     *                 property="fec_cierre",
-     *                 type="string",
-     *                 format="datetime",
-     *                 description="Fecha y hora de cierre del juego (debe ser futura)",
-     *                 example="2024-08-10 18:00:00"
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Juego actualizado exitosamente",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Juego actualizado exitosamente"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 ref="#/components/schemas/Game"
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Juego no encontrado",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="No query results for model [App\\Models\\Game].")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Error de validación",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="The given data was invalid."),
-     *             @OA\Property(
-     *                 property="errors",
-     *                 type="object",
-     *                 @OA\Property(
-     *                     property="fec_cierre",
-     *                     type="array",
-     *                     @OA\Items(type="string", example="The fec cierre must be a date after now.")
-     *                 )
-     *             )
-     *         )
-     *     )
-     * )
-     */
     public function update(Request $request, string $id)
     {
         $validated = $request->validate([
@@ -304,24 +183,39 @@ class GameController extends Controller
 
     public function getLastRonda(string $game_id)
     {
-        $game = Game::findOrFail($game_id); // Verifica que el juego exista
+        try{
+            $game = Game::findOrFail($game_id); // Verifica que el juego exista
 
-        $lastRonda = $game->rondas()->with('participantes.user')->orderBy('created_at', 'desc')->first();
+            $lastRonda = $game->rondas()->with('participantes.user')->orderBy('created_at', 'desc')->first();
 
-        if (!$lastRonda) {
+            if (!$lastRonda) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No hay rondas para este juego.'
+                ], 404);
+            }else {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Última ronda obtenida exitosamente',
+                    'game'=>$game,
+                    'data' => $lastRonda,
+                    'nro_ronda' => $game->rondas()->count()
+                ]);
+            }
+        } catch (ModelNotFoundException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'No hay rondas para este juego.'
+                'message' => 'Juego no encontrado',
+                'error' => 'El juego con ID ' . $game_id . ' no existe: '
             ], 404);
-        }else {
+        } catch (Exception $e) {
             return response()->json([
-                'success' => true,
-                'message' => 'Última ronda obtenida exitosamente',
-                'game'=>$game,
-                'data' => $lastRonda,
-                'nro_ronda' => $game->rondas()->count()
-            ]);
+                'success' => false,
+                'message' => 'Error interno del servidor',
+                'error' => $e->getMessage()
+            ], 500);
         }
+        
     }
 
     public function getAnalityGame(string $game_id)

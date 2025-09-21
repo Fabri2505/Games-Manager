@@ -1,5 +1,5 @@
-import type { GameCreated, LastRondaResponse } from "@/utils/schema";
-import type { AnalityRonda } from "@/utils/schema_ronda";
+import type { GameCreated } from "@/utils/schema_game";
+import type { AnalityRonda, LastRondaResponse } from "@/utils/schema_ronda";
 
 export class GameService{
     private baseUrl = "http://localhost:8000/api/game";

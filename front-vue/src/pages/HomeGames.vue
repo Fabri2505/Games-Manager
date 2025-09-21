@@ -13,37 +13,38 @@ const tomarRuta = (ruta:string)=>{
 </script>
 
 <template>
-    <Header 
-      :titulo="'Manager Games'" 
-      :descrip="'Lleva el control de tus juegos y mantén un registro de ganancias'">
-      <template #boton_return>
-        <button class="p-2 boton_retorno"><ArrowLeft/></button>
-      </template>
-      <template #botones>
-        
-      </template>
-    </Header>
-    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      <CardGame
-        title="Juegos de Cartas"
-        description="Registra las ganancias y pérdidas en juegos de cartas como Poker, Truco, etc."
-        route="/home-golpeado"
-        :is-popular="true"
-        color="blue"
-        icon="wallet"
-        @navigate="tomarRuta"
-      />
-      <CardGame
-        title="Juegos de Cartas"
-        description="Registra las ganancias y pérdidas en juegos de cartas como Poker, Truco, etc."
-        route="/golpeado"
-        :is-popular="true"
-        color="blue"
-        icon="wallet"
-        @navigate="tomarRuta"
-      />
+    <div class="m-5">
+      <Header 
+        :titulo="'Manager Games'" 
+        :descrip="'Lleva el control de tus juegos y mantén un registro de ganancias'">
+        <template #boton_return>
+          <button class="p-2 boton_retorno"><ArrowLeft/></button>
+        </template>
+        <template #botones>
+          
+        </template>
+      </Header>
+      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <CardGame
+          title="Juegos de Cartas"
+          description="Registra las ganancias y pérdidas en juegos de cartas como Poker, Truco, etc."
+          route="/home-golpeado"
+          :is-popular="true"
+          color="blue"
+          icon="wallet"
+          @navigate="tomarRuta"
+        />
+        <CardGame
+          title="Juegos de Cartas"
+          description="Registra las ganancias y pérdidas en juegos de cartas como Poker, Truco, etc."
+          route="/golpeado"
+          :is-popular="true"
+          color="blue"
+          icon="wallet"
+          @navigate="tomarRuta"
+        />
+      </div>
     </div>
-    
 
 </template>
 
