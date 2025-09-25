@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\GameResource;
 use App\Models\Game;
 use App\Models\Serie;
 use Exception;
@@ -35,10 +36,7 @@ class GameController extends Controller
                 })
                 ->get();
             
-            return response()->json([
-                'success' => true,
-                'data' => $games
-            ]);
+            return GameResource::collection($games);
 
         } catch (\Exception $e) {
             Log::error('Error en GameController@index: ' . $e->getMessage());
