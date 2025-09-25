@@ -4,7 +4,7 @@ import Header from '@/components/HeaderComponent.vue';
 import CardEstadist from '@/components/GolpeadoPage/CardEstadist.vue';
 import StatsCard from '../components/GolpeadoPage/DistribucionCard.vue';
 import type { Player , Participante, User } from '@/utils/schema_participante';
-import { ArrowLeft, ChartColumnBig, Clock, Guitar, Music, Sparkles } from 'lucide-vue-next';
+import { ArrowLeft, ChartColumnBig, Clock, Flame, Guitar, Music, Sparkles } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { gameService } from '@/service/GameService';
@@ -14,6 +14,7 @@ import router from '@/router';
 interface GolpeadoPageState {
   rondaId: number;
   gameId: number;
+  createdAt?: string;
 }
 
 let gameName:string = '';
@@ -23,10 +24,11 @@ const route = useRoute();
 const cantRonda = ref<number>(0); // Número de ronda actual
 const golpeadoState = ref<GolpeadoPageState>({
   rondaId: 0,
-  gameId: 0
+  gameId: 0,
+  createdAt: undefined
 });
 
-const racha = ref<boolean>(true) // Racha del jugador principal
+const racha = ref<boolean>(false) // Racha del jugador principal
 
 const gameStateItems = computed(() => [
   {
@@ -73,6 +75,7 @@ onMounted(async () => {
       gameName = lastRondaResponse.game.name;
       golpeadoState.value.gameId = lastRondaResponse.game.id;
       golpeadoState.value.rondaId = lastRondaResponse.data.id;
+      golpeadoState.value.createdAt = lastRondaResponse.data.created_at;
       cantRonda.value = lastRondaResponse.nro_ronda
 
       jugadores.value = lastRondaResponse.data.participantes.map((p: Participante<User>) => {
@@ -201,21 +204,37 @@ const balanceStats = ref([
       </template>
     </Header>
     <!-- Sección de estadísticas superior -->
-    <div v-if="racha" class="rounded-2xl p-6 bg-gradient-to-r from-red-500 to-red-600 shadow-lg mb-6">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <svg class="w-10 h-10 text-yellow-300" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.28 2.16.28 2.16-.36 2.73-2.18 4.78-4.49 6.68z"/>
-                </svg>
-                <div>
-                    <h3 class="text-white font-bold text-2xl">Pedro Pablo</h3>
-                    <p class="text-white/90 text-lg">🔥 2 victorias seguidas</p>
-                </div>
+    <div v-if="racha" class="rounded-2xl p-6 bg-gradient-to-br from-red-500 via-red-600 to-red-700 shadow-xl mb-6 border border-red-400/30">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <!-- Contenedor del icono con efecto glow -->
+          <div class="relative">
+            <div class="absolute inset-0 bg-yellow-300/30 rounded-full blur-md"></div>
+            <Flame class="w-12 h-12 text-yellow-300 relative z-10" stroke-width="2.5"/>
+          </div>
+          
+          <div>
+            <h3 class="text-white font-bold text-2xl mb-1">Pedro Pablo</h3>
+            <div class="flex items-center gap-2">
+              <div class="flex">
+                <span class="text-2xl">🔥</span>
+                <span class="text-2xl animate-pulse">🔥</span>
+              </div>
+              <p class="text-white/95 text-lg font-medium">2 juegos ganados seguidos</p>
             </div>
-            <div class="bg-white/20 rounded-full px-6 py-3">
-                <span class="text-white font-bold text-xl">🔥</span>
-            </div>
+            <p class="text-white/70 text-sm mt-1">¡Está en racha!</p>
+          </div>
         </div>
+        
+        <!-- Badge de racha con contexto de juegos -->
+        <div class="bg-white/20 backdrop-blur-sm rounded-full px-4 py-3 border border-white/30">
+          <div class="text-center">
+            <div class="text-white font-bold text-2xl">2</div>
+            <div class="text-white/80 text-xs font-medium">RONDAS</div>
+          </div>
+        </div>
+      </div>
+      
     </div>
 
     <!-- Versión compacta con 2 cards -->
@@ -226,49 +245,49 @@ const balanceStats = ref([
 
     <!-- Contenido principal -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2">
-          <div class="rounded-lg card_template text-card-foreground shadow-2xs h-full">
-            <!-- bg-[#FFE27A] -->
-            <div class="flex justify-between p-5">
-              <h1 class="text-3xl text-center md:text-left font-bold">Mesa de Juego</h1>
-              <div class="flex gap-2 items-center">
-                <button v-if="idJugadorSeleccionado" class="bg-amber-400 text-white p-2 rounded-md"
-                  @click="setWinner">Marcar Winner</button>
-                <button v-else class="bg-amber-400 text-white p-2 rounded-md"
-                  @click="setWinner">Empate</button>
-                <button class="bg-black text-white p-2 rounded-md"
-                  @click="nuevaRonda">Nueva Ronda</button>
-              </div>
-              
+      <div class="lg:col-span-2">
+        <div class="rounded-lg card_template text-card-foreground shadow-2xs h-full">
+          <!-- bg-[#FFE27A] -->
+          <div class="flex justify-between p-5">
+            <h1 class="text-3xl text-center md:text-left font-bold">Mesa de Juego</h1>
+            <div class="flex gap-2 items-center">
+              <button v-if="idJugadorSeleccionado" class="bg-amber-400 text-white p-2 rounded-md"
+                @click="setWinner">Marcar Winner</button>
+              <button v-else class="bg-amber-400 text-white p-2 rounded-md"
+                @click="setWinner">Empate</button>
+              <button class="bg-black text-white p-2 rounded-md"
+                @click="nuevaRonda">Nueva Ronda</button>
             </div>
-            <!-- #B3F5B9 -->
-            <div class="m-auto">
-              <div class="flex flex-wrap gap-2 md:gap-5 justify-center player-list">
-                <CardJugador v-for="jugador in jugadores" :key="jugador.id" :player="jugador" @playerSelected="onPlayerSelected"/>
-              </div>
+            
+          </div>
+          <!-- #B3F5B9 -->
+          <div class="m-auto">
+            <div class="flex flex-wrap gap-2 md:gap-5 justify-center player-list">
+              <CardJugador v-for="jugador in jugadores" :key="jugador.id" :player="jugador" @playerSelected="onPlayerSelected"/>
             </div>
           </div>
         </div>
+      </div>
         
-        <div class="space-y-4">
-            <!-- Distribución de Victorias -->
-            <StatsCard
-              title="Distribución de Victorias"
-              :icon="ChartColumnBig"
-              icon-color="text-blue-500"
-              type="victories"
-              :players="victoryStats"
-            />
+      <div class="space-y-4">
+        <!-- Distribución de Victorias -->
+        <StatsCard
+          title="Distribución de Victorias"
+          :icon="ChartColumnBig"
+          icon-color="text-blue-500"
+          type="victories"
+          :players="victoryStats"
+        />
 
-            <!-- Balance Juego Actual -->
-            <StatsCard
-              title="Balance Juego Actual"
-              :icon="Clock"
-              icon-color="text-amber-500"
-              type="balance"
-              :players="balanceStats"
-            />
-        </div>
+        <!-- Balance Juego Actual -->
+        <StatsCard
+          title="Balance Juego Actual"
+          :icon="Clock"
+          icon-color="text-amber-500"
+          type="balance"
+          :players="balanceStats"
+        />
+      </div>
     </div>
   </div>
     
