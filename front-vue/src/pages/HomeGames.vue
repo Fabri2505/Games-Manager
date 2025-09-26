@@ -24,7 +24,7 @@ const tomarRuta = (ruta:string)=>{
           
         </template>
       </Header>
-      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div class="grid justify-items-center gap-5 md:grid-cols-2 lg:grid-cols-3">
         <CardGame
           title="Juegos de Cartas"
           description="Registra las ganancias y pérdidas en juegos de cartas como Poker, Truco, etc."
@@ -35,10 +35,11 @@ const tomarRuta = (ruta:string)=>{
           @navigate="tomarRuta"
         />
         <CardGame
-          title="Juegos de Cartas"
-          description="Registra las ganancias y pérdidas en juegos de cartas como Poker, Truco, etc."
-          route="/golpeado"
-          :is-popular="true"
+          title="Bingo"
+          description="Proximamente disponible"
+          route="/#"
+          :is-popular="false"
+          :disabled="true"
           color="blue"
           icon="wallet"
           @navigate="tomarRuta"

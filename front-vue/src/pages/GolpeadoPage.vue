@@ -10,13 +10,16 @@ import { useRoute } from 'vue-router';
 import { gameService } from '@/service/GameService';
 import { rondaService, ValidationError } from '@/service/RondaService';
 import router from '@/router';
+import { useConfirm } from "primevue/useconfirm";
+
 
 interface GolpeadoPageState {
   rondaId: number;
   gameId: number;
-  createdAt?: string;
+  hora_ini_ronda?: string;
 }
 
+const confirm = useConfirm();
 let gameName:string = '';
 const jugadores = ref<Player[]>([]);
 const idJugadorSeleccionado = ref<number | null>(null);
@@ -25,10 +28,22 @@ const cantRonda = ref<number>(0); // Número de ronda actual
 const golpeadoState = ref<GolpeadoPageState>({
   rondaId: 0,
   gameId: 0,
-  createdAt: undefined
+  hora_ini_ronda: undefined
 });
 
 const racha = ref<boolean>(false) // Racha del jugador principal
+
+// Agregar función para formatear hora
+const formatearHora12 = (horaString?: string): string => {
+  if (!horaString) return '--:-- --';
+  
+  const [horas, minutos, segundos] = horaString.split(':');
+  const hora24 = parseInt(horas);
+  const hora12 = hora24 % 12 || 12;
+  const ampm = hora24 >= 12 ? 'PM' : 'AM';
+  
+  return `${hora12}:${minutos} ${ampm}`;
+};
 
 const gameStateItems = computed(() => [
   {
@@ -40,8 +55,8 @@ const gameStateItems = computed(() => [
     value: `${jugadores.value.length} activos`
   },
   {
-    label: 'Tiempo',
-    value: '15 minutos'
+    label: 'Hora inicio Ronda',
+    value: formatearHora12(golpeadoState.value.hora_ini_ronda)
   }
 ]);
 
@@ -75,7 +90,7 @@ onMounted(async () => {
       gameName = lastRondaResponse.game.name;
       golpeadoState.value.gameId = lastRondaResponse.game.id;
       golpeadoState.value.rondaId = lastRondaResponse.data.id;
-      golpeadoState.value.createdAt = lastRondaResponse.data.fec;
+      golpeadoState.value.hora_ini_ronda = lastRondaResponse.data.hora_ini;
       cantRonda.value = lastRondaResponse.nro_ronda
 
       jugadores.value = lastRondaResponse.data.participantes.map((p: Participante<User>) => {
@@ -109,13 +124,36 @@ const setWinner = async () => {
   console.log('Respuesta al setear ganador:', responseWinner);
 }
 
+const confirmarNuevaRonda = () => {
+  if (idJugadorSeleccionado.value){
+    nuevaRonda();
+  }else{
+    confirm.require({
+      message: '¿Estás seguro de iniciar una nueva ronda? Esto finalizará la ronda actual.',
+      header: 'Confirmar Nueva Ronda',
+      icon: 'pi pi-exclamation-triangle',
+      rejectProps: {
+        label: 'Cancel',
+        severity: 'secondary',
+        outlined: true
+      },
+      acceptProps: {
+        label: 'Save'
+      },
+      accept: () => {
+        nuevaRonda();
+      },
+      reject: () => {
+        // Acción en caso de rechazo (opcional)
+        console.log('Acción de nueva ronda cancelada.');
+      }
+    });
+  }
+};
+
 const nuevaRonda = async () => {
   // Lógica para iniciar una nueva ronda
   try{
-    console.log('Iniciando nueva ronda...');
-    console.log('ID del juego:', golpeadoState.value.gameId);
-    console.log('Jugadores participantes:', jugadores.value.map(j=>j.id));
-
     const rondaCreate = await rondaService.createRonda({
       game_id:golpeadoState.value.gameId??0,
       participantes:jugadores.value.map(j=>j.id)
@@ -129,27 +167,15 @@ const nuevaRonda = async () => {
 
     cantRonda.value += 1;
   } catch (error) {
-
     console.log('Error al crear la ronda:', error);
     // Manejo específico para errores de validación
     if (error instanceof ValidationError) {
       console.error('❌ Errores de validación detectados:');
-      
-      // Resumen de errores
       console.error(`📋 Resumen: ${error.getErrorSummary()}`);
       
-      // Aquí podrías mostrar una notificación al usuario
-      // Por ejemplo: mostrarNotificacion('error', error.getErrorSummary());
-      
     } else if (error instanceof Error) {
-      // Otros tipos de errores
       console.error('❌ Error al crear la ronda:', error.message);
-      
-      // Aquí podrías mostrar una notificación genérica
-      // Por ejemplo: mostrarNotificacion('error', 'Error inesperado al crear la ronda');
-      
     } else {
-      // Error completamente inesperado
       console.error('❌ Error inesperado:', error);
     }
   }
@@ -253,10 +279,8 @@ const balanceStats = ref([
             <div class="flex gap-2 items-center">
               <button v-if="idJugadorSeleccionado" class="bg-amber-400 text-white p-2 rounded-md"
                 @click="setWinner">Marcar Winner</button>
-              <button v-else class="bg-amber-400 text-white p-2 rounded-md"
-                @click="setWinner">Empate</button>
               <button class="bg-black text-white p-2 rounded-md"
-                @click="nuevaRonda">Nueva Ronda</button>
+                @click="confirmarNuevaRonda()">Nueva Ronda</button>
             </div>
             
           </div>
@@ -290,7 +314,7 @@ const balanceStats = ref([
       </div>
     </div>
   </div>
-    
+  <ConfirmDialog></ConfirmDialog>
 </template>
 
 <style scoped>
