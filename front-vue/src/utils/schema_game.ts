@@ -1,22 +1,3 @@
-export interface PlayerData {
-  nombre: string;
-  count: number;
-}
-
-export interface WinPlayers {
-  [playerId: string]: PlayerData;
-}
-
-export interface GameCreateResponse {
-    id: number;
-    descrip: string;
-    monto: string;
-    fec_juego: string;
-    fec_cierre: string | null;
-    user_id: number;
-    serie_id: number;
-}
-
 export interface GameResponse {
     id: number;
     name: string;
@@ -31,6 +12,6 @@ export interface GameResponse {
 export interface GameCreated {
     id_juego: number;
     name: string;
-    monto: string;
+    monto: number;
     fecha_juego: string;
 }

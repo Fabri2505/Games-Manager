@@ -3,9 +3,9 @@ export interface SerieResponse {
    name: string;
    user_id: number;
    is_active: number;
-   created_at: string;
-   updated_at: string;
    games_count: number;
+   pagado: number;
+   created_at: string;
 }
 
 export interface Serie {

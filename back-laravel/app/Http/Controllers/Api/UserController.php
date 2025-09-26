@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,91 +16,15 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    /**
-     * @OA\Get(
-     *     path="/api/players",
-     *     tags={"Players"},
-     *     summary="Listar todos los jugadores",
-     *     description="Obtiene una lista completa de todos los jugadores registrados en el sistema",
-     *     @OA\Response(
-     *         response=200,
-     *         description="Lista de jugadores obtenida exitosamente",
-     *         @OA\JsonContent(
-     *             @OA\Property(
-     *                 property="players",
-     *                 type="array",
-     *                 description="Array de jugadores",
-     *                 @OA\Items(ref="#/components/schemas/User")
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Error interno del servidor",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
-     */
     public function index()
     {
         $users = User::all();
 
         return response()->json([
-            'players' => $users
+            'players' => UserResource::collection($users)
         ]);
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/register",
-     *     tags={"Authentication"},
-     *     summary="Registrar nuevo usuario",
-     *     description="Crea una nueva cuenta de usuario y retorna token de acceso",
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"name","ape","email","password","password_confirmation"},
-     *             @OA\Property(property="name", type="string", example="Juan"),
-     *             @OA\Property(property="ape", type="string", example="Pérez"),
-     *             @OA\Property(property="email", type="string", format="email", example="juan@example.com"),
-     *             @OA\Property(property="password", type="string", format="password", example="password123"),
-     *             @OA\Property(property="password_confirmation", type="string", format="password", example="password123")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Usuario registrado exitosamente",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Usuario registrado exitosamente"),
-     *             @OA\Property(property="user", type="object",
-     *                 @OA\Property(property="id", type="integer", example=1),
-     *                 @OA\Property(property="name", type="string", example="Juan"),
-     *                 @OA\Property(property="ape", type="string", example="Pérez"),
-     *                 @OA\Property(property="email", type="string", example="juan@example.com"),
-     *                 @OA\Property(property="created_at", type="string", example="2025-01-15 10:30:00")
-     *             ),
-     *             @OA\Property(property="token", type="string", example="1|abc123..."),
-     *             @OA\Property(property="token_type", type="string", example="Bearer")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Error de validación",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error de validación"),
-     *             @OA\Property(property="errors", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Error interno del servidor"
-     *     )
-     * )
-     */
     public function store(RegisterRequest $register)
     {
         try{
@@ -139,60 +64,6 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/login",
-     *     tags={"Authentication"},
-     *     summary="Iniciar sesión",
-     *     description="Autentica usuario y retorna token de acceso",
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"email","password"},
-     *             @OA\Property(property="email", type="string", format="email", example="juan@example.com"),
-     *             @OA\Property(property="password", type="string", format="password", example="password123")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Login exitoso",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Login exitoso"),
-     *             @OA\Property(property="user", type="object",
-     *                 @OA\Property(property="id", type="integer", example=1),
-     *                 @OA\Property(property="name", type="string", example="Juan"),
-     *                 @OA\Property(property="ape", type="string", example="Pérez"),
-     *                 @OA\Property(property="email", type="string", example="juan@example.com"),
-     *                 @OA\Property(property="last_login", type="string", example="2025-01-15 10:30:00")
-     *             ),
-     *             @OA\Property(property="token", type="string", example="1|abc123..."),
-     *             @OA\Property(property="token_type", type="string", example="Bearer")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="Credenciales incorrectas",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Credenciales incorrectas")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Error de validación",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Error de validación"),
-     *             @OA\Property(property="errors", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Error interno del servidor"
-     *     )
-     * )
-     */
     public function login(LoginRequest $request)
     {
         try {

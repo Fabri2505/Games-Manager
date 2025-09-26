@@ -12,8 +12,6 @@ export interface RondaData {
     hora_ini: string;
     hora_fin: string | null;
     game_id: number;
-    created_at: string;
-    updated_at: string;
     participantes: Participante<User>[];
 }
 
@@ -23,12 +21,8 @@ export interface RondaResponse {
     data: RondaData;
 }
 
-export interface RondaApiResponse extends RondaResponse {
-    game: GameResponse;
-}
-
 export interface  DataResponseWinner {
-    participantes: Participante<BasicUser>;
+    participante: Participante<BasicUser>;
     ronda_finalizada : boolean;
 }
 
@@ -38,7 +32,8 @@ export interface SetWinnerResponse {
     data: DataResponseWinner;
 }
 
-export interface LastRondaResponse extends RondaApiResponse {
+export interface LastRondaResponse extends RondaResponse {
+    game: GameResponse;
     nro_ronda: number; // Número total de rondas en el juego
 }
 

@@ -20,9 +20,9 @@ class RondaResource extends JsonResource
             'fec' => $this->fec ? 
                 Carbon::parse($this->fec)->setTimezone('America/Lima')->format('Y-m-d') : null,
             'hora_ini' => $this->hora_ini ? 
-                Carbon::parse($this->hora_ini)->format('H:i:s') : null,
+                Carbon::parse($this->hora_ini)->setTimezone('America/Lima')->format('H:i:s') : null,
             'hora_fin' => $this->hora_fin ? 
-                Carbon::parse($this->hora_fin)->format('H:i:s') : null,
+                Carbon::parse($this->hora_fin)->setTimezone('America/Lima')->format('H:i:s') : null,
             'game_id' => $this->game_id,
             'participantes' => $this->whenLoaded('participantes', function () {
                 return ParticipanteResource::collection($this->participantes);

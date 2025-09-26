@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\SerieResource;
 use App\Models\Game;
 use App\Models\Serie;
 use Illuminate\Http\Request;
@@ -26,7 +27,7 @@ class SerieController extends Controller
             ->withCount('games')
             ->get();
 
-        return response()->json($series);
+        return SerieResource::collection($series);
     }
 
     public function asignGame(Request $request)

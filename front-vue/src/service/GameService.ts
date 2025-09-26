@@ -1,4 +1,4 @@
-import type { GameCreated } from "@/utils/schema_game";
+import type { GameCreated, GameResponse } from "@/utils/schema_game";
 import type { AnalityRonda, LastRondaResponse } from "@/utils/schema_ronda";
 
 export class GameService{
@@ -20,12 +20,12 @@ export class GameService{
             throw new Error(`HTTP ${response.status}: ${response.statusText}`)
         }
 
-        const data = await response.json();
-        const juegoCreado = data.game || data;
+        const game = await response.json();
+        const juegoCreado:GameResponse = game.data;
 
         return {
             id_juego: juegoCreado.id,
-            name: juegoCreado.descrip,
+            name: juegoCreado.name,
             monto: juegoCreado.monto,
             fecha_juego: juegoCreado.fec_juego
         }

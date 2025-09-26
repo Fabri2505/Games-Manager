@@ -75,7 +75,7 @@ onMounted(async () => {
       gameName = lastRondaResponse.game.name;
       golpeadoState.value.gameId = lastRondaResponse.game.id;
       golpeadoState.value.rondaId = lastRondaResponse.data.id;
-      golpeadoState.value.createdAt = lastRondaResponse.data.created_at;
+      golpeadoState.value.createdAt = lastRondaResponse.data.fec;
       cantRonda.value = lastRondaResponse.nro_ronda
 
       jugadores.value = lastRondaResponse.data.participantes.map((p: Participante<User>) => {

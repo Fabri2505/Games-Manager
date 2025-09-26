@@ -1,4 +1,4 @@
-import type { Player, PlayerResponse } from "@/utils/schema_participante";
+import type { Player, User } from "@/utils/schema_participante";
 
 export class PlayerService{
     private baseUrl = "http://localhost:8000/api/players";
@@ -20,7 +20,7 @@ export class PlayerService{
             }
 
             // ✅ Mapear los datos de la API a tu interface
-            return players.map((player: PlayerResponse) => ({
+            return players.map((player: User) => ({
                 id: player.id,
                 email: player.email,
                 name: `${player.name} ${player.ape}`

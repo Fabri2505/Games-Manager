@@ -1,4 +1,4 @@
-import type { Serie, SerieResponse } from "@/utils/schema";
+import type { Serie, SerieResponse } from "@/utils/schema_serie";
 
 export class SerieService{
     private baseUrl = "http://localhost:8000/api/series";
@@ -22,8 +22,8 @@ export class SerieService{
             throw new Error(`HTTP ${response.status}: ${response.statusText}`)
         }
 
-        const data = await response.json();
-        const series = data.series || data;
+        const serie = await response.json();
+        const series = serie.data;
 
         // ✅ Mapear los datos de la API a tu interface
         return series.map((serie: SerieResponse) => ({

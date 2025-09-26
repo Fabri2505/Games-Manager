@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ParticipanteResource;
+use App\Http\Resources\RondaResource;
 use App\Models\Participante;
 use App\Models\Ronda;
 use App\Models\User;
@@ -62,7 +64,7 @@ class RondaController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Ronda iniciada exitosamente',
-                'data' => $ronda->load('participantes.user')
+                'data' => new RondaResource($ronda->load('participantes.user'))
             ], 201);
 
 
@@ -276,7 +278,7 @@ class RondaController extends Controller
                 'success' => true,
                 'message' => $message,
                 'data' => [
-                    'participante' => $participante->load('user:id,name,email'),
+                    'participante' => new ParticipanteResource($participante->load('user')),
                     'ronda_finalizada' => $validated['win'] && $ronda->wasChanged('hora_fin')
                 ]
             ]);
