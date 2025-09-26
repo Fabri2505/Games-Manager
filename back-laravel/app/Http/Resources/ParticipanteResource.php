@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -16,11 +17,11 @@ class ParticipanteResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'winner' => $this->winner,
             'ronda_id' => $this->ronda_id,
-            'user_id' => $this->user_id,
-            'score' => $this->score,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at
+            'user' => new UserResource($this->whenLoaded('user')),
+            'created_at' => $this->created_at ?
+                Carbon::parse($this->created_at)->setTimezone('America/Lima')->format('Y-m-d H:i:s') : null
         ];
     }
 }

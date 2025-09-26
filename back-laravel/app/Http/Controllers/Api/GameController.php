@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\GameResource;
+use App\Http\Resources\RondaResource;
 use App\Models\Game;
 use App\Models\Serie;
 use Exception;
@@ -51,16 +52,11 @@ class GameController extends Controller
     public function getGame($idGame)
     {
         try {
-            $game = Game::with([
-                'rondas' => function ($query) {
-                    $query->with('participantes.user')
-                            ->orderBy('created_at', 'asc');
-                }
-            ])->findOrFail($idGame);
+            $game = Game::findOrFail($idGame);
 
             return response()->json([
                 'success' => true,
-                'data' => $game
+                'data' => new GameResource($game)
             ]);
         } catch (\Exception $e) {
             Log::error('Error en GameController@getGame: ' . $e->getMessage());
@@ -168,8 +164,8 @@ class GameController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Última ronda obtenida exitosamente',
-                    'game'=>$game,
-                    'data' => $lastRonda,
+                    'game'=>new GameResource($game),
+                    'data' => new RondaResource($lastRonda),
                     'nro_ronda' => $game->rondas()->count()
                 ]);
             }
