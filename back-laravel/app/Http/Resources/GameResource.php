@@ -26,6 +26,9 @@ class GameResource extends JsonResource
             'user_id' => $this->user_id,
             'pausado' => $this->pausado,
             'serie_id' => $this->serie_id,
+            'rondas' => $this->whenLoaded('rondas', function () {
+                return RondaResource::collection($this->rondas);
+            }),
         ];
 
     }

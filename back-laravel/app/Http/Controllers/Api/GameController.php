@@ -101,35 +101,8 @@ class GameController extends Controller
             'serie_id'=>$serie->id
         ]);
 
-        return response()->json([
-            'game' => $game
-        ]);
+        return new GameResource($game);
     }
-
-    // public function actual(Request $request)
-    // {
-    //     $validated = $request->validate([
-    //         'user_id'=>'required|exists:users,id'
-    //     ]);
-
-    //     $game = Game::where('user_id', $validated['user_id'])
-    //         ->whereNull('fec_cierre')
-    //         ->where('pausado', false)
-    //         ->latest('fec_juego')
-    //         ->first();
-
-    //     if (!$game) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'No hay un juego activo para este usuario.'
-    //         ], 404);
-    //     }
-
-    //     return response()->json([
-    //         'success' => true,
-    //         'data' => $game
-    //     ]);
-    // }
 
     /**
      * Display the specified resource.
@@ -154,7 +127,7 @@ class GameController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Juego actualizado exitosamente', 
-            'data' => $game
+            'data' => new GameResource($game)
         ]);
     }
 
@@ -175,7 +148,7 @@ class GameController extends Controller
         return response()->json([
             'success' => true,
             'message' => $validated['paused'] ? 'Juego pausado' : 'Juego reanudado',
-            'data' => $game
+            'data' => new GameResource($game)
         ]);
     }
 
