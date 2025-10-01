@@ -7,6 +7,7 @@ import HomeGames from '@/pages/HomeGames.vue'
 import HomeGolpeado from '@/pages/HomeGolpeado.vue'
 import GolpeadoPage from '@/pages/GolpeadoPage.vue'
 import NotFoundPage from '@/pages/NotFoundPage.vue'
+import PantallaCarga from '@/components/PantallaCarga.vue'
 
 const routes:RouteRecordRaw[] = [
   {
@@ -69,6 +70,15 @@ const routes:RouteRecordRaw[] = [
     component: NotFoundPage,
     meta: { 
       title: 'Pagina no encontrada',
+      requiresGuest: true 
+    }
+  },
+  {
+    path: '/prueba',
+    name: 'prueba', 
+    component: PantallaCarga,
+    meta: { 
+      title: 'Pantalla de carga',
       requiresGuest: true 
     }
   }

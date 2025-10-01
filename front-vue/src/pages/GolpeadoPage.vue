@@ -11,6 +11,9 @@ import { gameService } from '@/service/GameService';
 import { rondaService, ValidationError } from '@/service/RondaService';
 import router from '@/router';
 import { useConfirm } from "primevue/useconfirm";
+import { useLoading } from '@/composable/useLoading';
+const { startLoading, stopLoading } = useLoading()
+
 
 
 interface GolpeadoPageState {
@@ -80,7 +83,7 @@ const leaderItems = [
 onMounted(async () => {
   // Obtener datos del state de la navegación
   try {
-
+    startLoading();
     // Fallback si no hay datos
     const lastRondaResponse = await gameService.getLastRonda(Number(route.params.idGame));
 
@@ -109,10 +112,11 @@ onMounted(async () => {
     const analityData = await gameService.getAnalitycs(golpeadoState.value.gameId);
 
     console.log('Datos analíticos de la ronda:', analityData)
-    
+    stopLoading();  
   } catch (error) {
     console.error('Error al parsear datos:', error)
     router.push('/not-found');
+    stopLoading(); 
   }
   
 })
