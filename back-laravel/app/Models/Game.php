@@ -85,12 +85,63 @@ class Game extends Model
             }
         }
 
-        return [
-            'user' => $ultimoGanador->user,
-            'user_id' => $userId,
-            'longitud' => $rachaCount,
-            'rondas_ganadas' => array_reverse($rondas_ganadas)
-        ];
+        if ($rachaCount > 2){
+            return [
+                'user_name' => $ultimoGanador->user->name .' '.$ultimoGanador->user->ape,
+                'user_id' => $userId,
+                'longitud' => $rachaCount
+            ];
+        }else{
+            return null;
+        }
+
+    }
+
+    public function getLiderGame()
+    {
+        $rondas = $this->rondas()
+        ->whereHas('participantes', function ($query) {
+            $query->where('winner', true);
+        })
+        ->withCount('participantes')
+        ->with(['participantes' => function ($query) {
+            $query->where('winner', true)
+                ->select('id', 'user_id', 'ronda_id', 'winner');
+        }, 'participantes.user:id,name,ape'])
+        ->get();
+
+        if ($rondas->isEmpty()) {
+            return null;
+        }
+
+        $lideres = [];
+
+        foreach ($rondas as $ronda) {
+
+            $participante = $ronda->participantes->first();
+
+            $monto_ganado_ronda = ($ronda->participantes_count - 1)*$this->monto;
+
+            if (!$participante) {
+                continue; // No hay ganador en esta ronda
+            }
+            $userId = $participante->user_id;
+
+            if (!isset($lideres[$userId])) {
+                $lideres[$userId] = [
+                    'user' => $participante->user->name.' '.$participante->user->ape,
+                    'monto' => 0,
+                    'rondas_ganadas' => 0
+                ];
+            }
+
+            $lideres[$userId]['monto'] += $monto_ganado_ronda;
+            $lideres[$userId]['rondas_ganadas']++;
+
+        }
+
+        $liderPrincipal = collect($lideres)->sortByDesc('rondas_ganadas')->first();
+        return $liderPrincipal;
     }
 
 }

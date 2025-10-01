@@ -18,7 +18,7 @@ defineProps<Props>();
 </script>
 
 <template>
-    <div class="bg-white rounded-xl p-4 shadow-sm">
+    <div class="bg-white rounded-xl border p-4 shadow-sm">
         <div class="flex items-center gap-3 mb-3">
             <div 
                 class="w-10 h-10 rounded-full flex items-center justify-center"

@@ -35,6 +35,7 @@ const golpeadoState = ref<GolpeadoPageState>({
 });
 
 const racha = ref<boolean>(false) // Racha del jugador principal
+const lider = ref<boolean>(false) // Nombre del jugador en racha
 
 // Agregar función para formatear hora
 const formatearHora12 = (horaString?: string): string => {
@@ -63,7 +64,7 @@ const gameStateItems = computed(() => [
   }
 ]);
 
-const leaderItems = [
+const leaderItems = computed(()=>[
   {
     label: 'Nombre',
     value: 'Pedro Pablo'
@@ -77,7 +78,7 @@ const leaderItems = [
     label: 'Victorias',
     value: '6 (55%)'
   }
-];
+]);
 
 
 onMounted(async () => {
@@ -270,7 +271,7 @@ const balanceStats = ref([
     <!-- Versión compacta con 2 cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
       <CardEstadist title="Estado de Partida" :icon="Sparkles" colorScheme="green" :items="gameStateItems"/>
-      <CardEstadist title="Líder Actual" :icon="Guitar" colorScheme="blue" :items="leaderItems"/>
+      <CardEstadist v-if="lider" title="Líder Actual" :icon="Guitar" colorScheme="blue" :items="leaderItems"/>
     </div>
 
     <!-- Contenido principal -->
@@ -336,7 +337,7 @@ const balanceStats = ref([
   }
 
   .card_template{
-    border: 0.5px solid #EBEBEB;
+    border: 1px solid #000000;
     border-radius: 15px;
   }
 

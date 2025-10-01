@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded-lg bg-white shadow-sm border-0 p-6">
+  <div class="rounded-lg bg-white shadow-sm border p-6">
     <div class="flex items-center gap-2 mb-4">
       <component :is="icon" class="w-5 h-5" :class="iconColor" />
       <h3 class="text-lg font-semibold">{{ title }}</h3>
