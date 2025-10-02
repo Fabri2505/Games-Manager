@@ -192,14 +192,14 @@ class GameController extends Controller
 
         $racha_result = $game->calcularJugadorEnRacha();
 
-        $liderGame = $game->getLiderGame();
+        $playersAnality = $game->getAnalityPlayers();
 
         return response()->json([
             'success' => true,
             'message' => 'Análisis del juego obtenido exitosamente',
             'racha' => $racha_result,
             'total_rondas' => $totalRondas,
-            'lider' => $liderGame
+            "players_anality" => $playersAnality
         ]);
     }
 

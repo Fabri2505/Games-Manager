@@ -17,28 +17,20 @@
 <script setup lang="ts">
 import type { Player } from '@/utils/schema_participante';
 import { computed } from 'vue';
-
+import { usePlayerUtils } from '@/composable/useUtils';
 
 interface Props {
   player: Player;
 }
 
 const props = defineProps<Props>();
+const {getIniciales} = usePlayerUtils();
 
 const emit = defineEmits<{
   playerSelected: [player: { id: number, nombre: string }]
 }>();
 
-const iniciales = computed(()=>{
-  if(!props.player.name) return '';
-
-  const words = props.player.name.trim().split(' ');
-  if (words.length === 1) {
-    return words[0].charAt(0).toUpperCase();
-  }
-  
-  return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase()
-});
+const iniciales = computed(()=>getIniciales(props.player.name));
 
 const seleccionarJugador = () => {
   emit('playerSelected', { id: props.player.id, nombre: props.player.name });

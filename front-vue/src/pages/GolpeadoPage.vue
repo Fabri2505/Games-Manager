@@ -2,7 +2,7 @@
 import CardJugador from '@/components/CardJugador.vue';
 import Header from '@/components/HeaderComponent.vue';
 import CardEstadist from '@/components/GolpeadoPage/CardEstadist.vue';
-import StatsCard from '../components/GolpeadoPage/DistribucionCard.vue';
+import StatsCard, { type StatsPlayer } from '../components/GolpeadoPage/DistribucionCard.vue';
 import type { Player , Participante, User } from '@/utils/schema_participante';
 import { ArrowLeft, ChartColumnBig, Clock, Flame, Guitar, Music, Sparkles } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
@@ -12,14 +12,19 @@ import { rondaService, ValidationError } from '@/service/RondaService';
 import router from '@/router';
 import { useConfirm } from "primevue/useconfirm";
 import { useLoading } from '@/composable/useLoading';
+import type { ItemPlayerAnality } from '@/utils/schema_ronda';
 const { startLoading, stopLoading } = useLoading()
-
 
 
 interface GolpeadoPageState {
   rondaId: number;
   gameId: number;
   hora_ini_ronda?: string;
+}
+
+interface UsuarioEnRacha {
+  user: string;
+  rachas: number; // Número de rachas consecutivas
 }
 
 const confirm = useConfirm();
@@ -34,8 +39,8 @@ const golpeadoState = ref<GolpeadoPageState>({
   hora_ini_ronda: undefined
 });
 
-const racha = ref<boolean>(false) // Racha del jugador principal
-const lider = ref<boolean>(false) // Nombre del jugador en racha
+const racha = ref<UsuarioEnRacha|null>(null) // Racha del jugador principal
+const lider = ref<ItemPlayerAnality|null>(null) // Nombre del jugador en racha
 
 // Agregar función para formatear hora
 const formatearHora12 = (horaString?: string): string => {
@@ -48,6 +53,19 @@ const formatearHora12 = (horaString?: string): string => {
   
   return `${hora12}:${minutos} ${ampm}`;
 };
+
+// Datos de ejemplo para victorias
+
+const victoryStats = ref<StatsPlayer[]>([
+  { id: 1, name: 'Fabricio David Cervantes Mendoza', value: 6, percentage: 55 },
+  { id: 2, name: 'Susana Villaran', value: 5, percentage: 20 }
+])
+
+// Datos de ejemplo para balance
+const balanceStats = ref([
+  { id: 1, name: 'Fabricio David Cervantes Mendoza', value: 51 },
+  { id: 2, name: 'Susana Villaran', value: -51 }
+])
 
 const gameStateItems = computed(() => [
   {
@@ -64,19 +82,26 @@ const gameStateItems = computed(() => [
   }
 ]);
 
+const porcentajeVictorias = computed(() => {
+  if (!lider.value || jugadores.value.length === 0) return '0%';
+  const totalRondas = cantRonda.value;
+  const porcentaje = (lider.value.rondas_ganadas / totalRondas) * 100;
+  return `${porcentaje.toFixed(1)}%`;
+});
+
 const leaderItems = computed(()=>[
   {
     label: 'Nombre',
-    value: 'Pedro Pablo'
+    value: lider.value?.user ?? '--'
   },
   {
     label: 'Puntaje',
-    value: '+51',
+    value: '+'+lider.value?.monto.toString(),
     valueClass: 'text-green-600'
   },
   {
     label: 'Victorias',
-    value: '6 (55%)'
+    value:  `${lider.value?.rondas_ganadas} (${porcentajeVictorias.value})`
   }
 ]);
 
@@ -112,7 +137,34 @@ onMounted(async () => {
 
     const analityData = await gameService.getAnalitycs(golpeadoState.value.gameId);
 
-    console.log('Datos analíticos de la ronda:', analityData)
+    console.log('Datos analíticos de la ronda:', analityData);
+
+    lider.value = analityData.players_anality.players.reduce((max, p) => {
+      return p.rondas_ganadas > max.rondas_ganadas ? p : max;
+    }, analityData.players_anality.players[0]) ?? null;
+
+    racha.value = analityData.racha ? {
+      user:analityData.racha.user_name,
+      rachas: analityData.racha.longitud
+    }: null;
+
+    victoryStats.value = analityData.players_anality.players.map((p)=>{
+      return {
+        id: p.user_id,
+        name: p.user,
+        value: p.rondas_ganadas,
+        percentage: (cantRonda.value > 0) ? Math.round((p.rondas_ganadas / cantRonda.value) * 100) : 0        
+      }
+    })
+
+    balanceStats.value = analityData.players_anality.players.map((p)=>{
+      return {
+        id: p.user_id,
+        name: p.user,
+        value: p.monto
+      }
+    })
+
     stopLoading();  
   } catch (error) {
     console.error('Error al parsear datos:', error)
@@ -207,20 +259,6 @@ const onPlayerSelected = (player: { id: number, nombre: string }) => {
 
 };
 
-// Datos de ejemplo para victorias
-const victoryStats = ref([
-  { id: 1, name: 'PP', value: 6, percentage: 55 },
-  { id: 2, name: 'JM', value: 5, percentage: 20 },
-  { id: 3, name: 'AL', value: 3, percentage: 25 }
-])
-
-// Datos de ejemplo para balance
-const balanceStats = ref([
-  { id: 1, name: 'PP', value: 51 },
-  { id: 2, name: 'JM', value: -51 },
-  { id: 3, name: 'AL', value: 0 }
-])
-
 </script>
 
 <template>
@@ -235,7 +273,7 @@ const balanceStats = ref([
       </template>
     </Header>
     <!-- Sección de estadísticas superior -->
-    <div v-if="racha" class="rounded-2xl p-6 bg-gradient-to-br from-red-500 via-red-600 to-red-700 shadow-xl mb-6 border border-red-400/30">
+    <div v-if="racha" class="rounded-2xl p-6 bg-gradient-to-br from-red-500 via-red-600 to-red-700 shadow-sm mb-6 border border-black">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-4">
           <!-- Contenedor del icono con efecto glow -->
@@ -245,13 +283,13 @@ const balanceStats = ref([
           </div>
           
           <div>
-            <h3 class="text-white font-bold text-2xl mb-1">Pedro Pablo</h3>
+            <h3 class="text-white font-bold text-2xl mb-1">{{ racha.user }}</h3>
             <div class="flex items-center gap-2">
               <div class="flex">
                 <span class="text-2xl">🔥</span>
                 <span class="text-2xl animate-pulse">🔥</span>
               </div>
-              <p class="text-white/95 text-lg font-medium">2 juegos ganados seguidos</p>
+              <p class="text-white/95 text-lg font-medium">{{ racha.rachas }} juegos ganados seguidos</p>
             </div>
             <p class="text-white/70 text-sm mt-1">¡Está en racha!</p>
           </div>
@@ -260,7 +298,7 @@ const balanceStats = ref([
         <!-- Badge de racha con contexto de juegos -->
         <div class="bg-white/20 backdrop-blur-sm rounded-full px-4 py-3 border border-white/30">
           <div class="text-center">
-            <div class="text-white font-bold text-2xl">2</div>
+            <div class="text-white font-bold text-2xl">{{ racha.rachas }}</div>
             <div class="text-white/80 text-xs font-medium">RONDAS</div>
           </div>
         </div>

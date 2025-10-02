@@ -38,15 +38,28 @@ export interface LastRondaResponse extends RondaResponse {
 }
 
 export interface JugadorEnRacha {
-   user: User;
    user_id: number;
+   user_name: string;
    longitud: number;
-   rondas_ganadas: number[];
 }
+
+export interface ItemPlayerAnality {
+    user_id:number;
+    user:string;
+    monto:number;
+    rondas_ganadas:number;
+}
+
+export interface PlayerAnality {
+    players: ItemPlayerAnality[];
+    rondas_sin_ganador: number; // ✅ Nueva propiedad
+}
+
 
 export interface AnalityRonda {
     success: true,
     message: "Análisis del juego obtenido exitosamente",
     racha: JugadorEnRacha,
+    players_anality: PlayerAnality;
     total_rondas: number;
 }

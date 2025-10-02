@@ -13,7 +13,7 @@
           :key="player.id"
           class="flex items-center justify-between"
         >
-          <span class="text-sm font-medium">{{ player.name }}</span>
+          <span class="text-sm font-medium">{{ getIniciales(player.name) }}</span>
           <div class="flex items-center gap-2 flex-1 mx-3">
             <div class="flex-1 bg-gray-200 rounded-full h-2">
               <div 
@@ -35,7 +35,7 @@
           :key="player.id"
           class="flex items-center justify-between"
         >
-          <span class="text-sm font-medium">{{ player.name }}</span>
+          <span class="text-sm font-medium">{{ getIniciales(player.name) }}</span>
           <span 
             class="text-sm font-semibold"
             :class="getBalanceColor(player.value)"
@@ -52,7 +52,7 @@
           :key="player.id"
           class="flex items-center justify-between"
         >
-          <span class="text-sm font-medium">{{ player.name }}</span>
+          <span class="text-sm font-medium">{{ getIniciales(player.name) }}</span>
           <span class="text-sm font-medium">{{ player.value }}</span>
         </div>
       </template>
@@ -61,9 +61,12 @@
 </template>
 
 <script setup lang="ts">
+import { usePlayerUtils } from '@/composable/useUtils'
 import type { Component } from 'vue'
 
-interface StatsPlayer {
+const {getIniciales} = usePlayerUtils();
+
+export interface StatsPlayer {
   id: number
   name: string
   value: number

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class Game extends Model
 {
@@ -97,16 +98,13 @@ class Game extends Model
 
     }
 
-    public function getLiderGame()
+
+    public function getAnalityPlayers()
     {
         $rondas = $this->rondas()
-        ->whereHas('participantes', function ($query) {
-            $query->where('winner', true);
-        })
         ->withCount('participantes')
         ->with(['participantes' => function ($query) {
-            $query->where('winner', true)
-                ->select('id', 'user_id', 'ronda_id', 'winner');
+            $query->select('id', 'user_id', 'ronda_id', 'winner');
         }, 'participantes.user:id,name,ape'])
         ->get();
 
@@ -114,34 +112,53 @@ class Game extends Model
             return null;
         }
 
-        $lideres = [];
+        $players = [];
+        $rondasSinGanador = 0;
 
         foreach ($rondas as $ronda) {
+            $ronda->participantes->map(function($p) {
+                Log::info('Participante en ronda ' . $p->ronda_id . ': ' . $p->id . ' (Winner: ' . ($p->winner ? 'Sí' : 'No') . ')');
+            });
+            // ✅ Verificar si algún participante es ganador
+            $tieneGanador = $ronda->participantes->contains('winner', true);
 
-            $participante = $ronda->participantes->first();
-
-            $monto_ganado_ronda = ($ronda->participantes_count - 1)*$this->monto;
-
-            if (!$participante) {
-                continue; // No hay ganador en esta ronda
-            }
-            $userId = $participante->user_id;
-
-            if (!isset($lideres[$userId])) {
-                $lideres[$userId] = [
-                    'user' => $participante->user->name.' '.$participante->user->ape,
-                    'monto' => 0,
-                    'rondas_ganadas' => 0
-                ];
+            if (!$tieneGanador) {
+                $rondasSinGanador++;
+                Log::info('Ronda ' . $ronda->id . ' no tiene ganador');
+                continue; // Saltar esta ronda
             }
 
-            $lideres[$userId]['monto'] += $monto_ganado_ronda;
-            $lideres[$userId]['rondas_ganadas']++;
+            foreach ($ronda->participantes as $participante) {
+                $userId = $participante->user_id;
 
+                if (!isset($players[$userId])) {
+                    $players[$userId] = [
+                        'user_id' => $userId,
+                        'user' => $participante->user->name.' '.$participante->user->ape,
+                        'monto' => 0,
+                        'rondas_ganadas' => 0
+                    ];
+                }
+
+                Log::info('Procesando participante: ' . $participante->id . ' en ronda: ' . $ronda->id);
+
+                if ($participante->winner) {
+                    $monto_ganado_ronda = ($ronda->participantes_count - 1)*$this->monto;
+                    $players[$userId]['monto'] += $monto_ganado_ronda; // Suma el monto ganado
+                    $players[$userId]['rondas_ganadas']++;
+                }else{
+                    $players[$userId]['monto'] -= $this->monto; // Resta el monto por participar
+                }
+            }
         }
 
-        $liderPrincipal = collect($lideres)->sortByDesc('rondas_ganadas')->first();
-        return $liderPrincipal;
+        // Ordenar los jugadores por monto ganado de mayor a menor
+        $playersOrdenados = collect($players)->sortByDesc('monto')->values()->all();
+
+        return [
+            'players' => $playersOrdenados,
+            'rondas_sin_ganador' => $rondasSinGanador // ✅ Retornar la cantidad
+        ];
     }
 
 }
